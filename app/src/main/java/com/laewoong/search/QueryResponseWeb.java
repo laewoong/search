@@ -8,7 +8,7 @@ import java.util.List;
  * Created by laewoong on 2018. 4. 21..
  */
 
-public class SearchResultWeb {
+public class QueryResponseWeb {
 
     @SerializedName("lastBuildDate")
     private String lastBuildDate;

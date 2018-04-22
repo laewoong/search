@@ -21,9 +21,9 @@ import java.util.List;
  * Created by laewoong on 2018. 4. 21..
  */
 
-public class WebQueryFragment extends Fragment {
+public class WebResponseFragment extends Fragment {
 
-    private static final String TAG = WebQueryFragment.class.getSimpleName();
+    private static final String TAG = WebResponseFragment.class.getSimpleName();
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -41,7 +41,7 @@ public class WebQueryFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_web_query, container, false);
+        View view = inflater.inflate(R.layout.fragment_web_response, container, false);
 
         mRecyclerView = (RecyclerView)view.findViewById(R.id.recyclelistview_search_result);
 
@@ -128,7 +128,7 @@ public class WebQueryFragment extends Fragment {
                                                        int viewType) {
             // create a new view
             View v = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_search_result_web, parent, false);
+                    .inflate(R.layout.item_web_response, parent, false);
             // set the view's size, margins, paddings and layout parameters
 
             MyAdapter.ViewHolder vh = new MyAdapter.ViewHolder(v);

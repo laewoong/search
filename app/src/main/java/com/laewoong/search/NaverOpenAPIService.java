@@ -1,13 +1,10 @@
 package com.laewoong.search;
 
-import java.util.List;
-
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
-import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 /**
@@ -21,7 +18,7 @@ public interface NaverOpenAPIService {
             "X-Naver-Client-Secret:" + Constants.CLIENT_SECRET
     })
     @GET("webkr.json")
-    Call<SearchResultWeb> repoContributors(
+    Call<QueryResponseWeb> repoContributors(
             @Query("query") String query,
             @Query("start") int start,
             @Query("display") int display);

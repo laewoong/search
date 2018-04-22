@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, OnQueryResultListener {
+public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, OnQueryResponseListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
     private SearchView mSearchView;
 
     private ViewGroup mFragmentContainer;
-    private WebQueryFragment mWebQueryFragment;
+    private WebResponseFragment mWebResponseFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         mSearchView = (SearchView)findViewById(R.id.searchview_query);
         mFragmentContainer = (ViewGroup)findViewById(R.id.container_fragment);
 
-        mWebQueryFragment = new WebQueryFragment();
+        mWebResponseFragment = new WebResponseFragment();
 
         init();
     }
@@ -49,8 +49,8 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
                     return false;
                 }
 
-                mWebQueryFragment.clearList();
-                mWebQueryFragment.setQuery(query);
+                mWebResponseFragment.clearList();
+                mWebResponseFragment.setQuery(query);
                 mQueryHandler.queryWeb(query);
 
                 return false;
@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         mSearchView.setQueryRefinementEnabled(true);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(mFragmentContainer.getId(), mWebQueryFragment, mWebQueryFragment.getClass().getSimpleName());
+        transaction.replace(mFragmentContainer.getId(), mWebResponseFragment, mWebResponseFragment.getClass().getSimpleName());
         transaction.commit();
     }
 
@@ -85,12 +85,12 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
     }
 
     @Override
-    public void onSuccessQueryResult(final List<WebInfo> list) {
+    public void onResponse(final List<WebInfo> list) {
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mWebQueryFragment.addItems(list);
+                mWebResponseFragment.addItems(list);
             }
         });
     }

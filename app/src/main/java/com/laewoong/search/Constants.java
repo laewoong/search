@@ -11,8 +11,4 @@ public class Constants {
 
 
     public static final int DEFAULT_DISPALY  = 20;
-
-
-
-
 }

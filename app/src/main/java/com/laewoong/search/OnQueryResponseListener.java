@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface OnQueryResponseListener {
 
-    public void onSuccessQueryResult(List<WebInfo> list);
+    public void onResponse(List<WebInfo> list);
 }

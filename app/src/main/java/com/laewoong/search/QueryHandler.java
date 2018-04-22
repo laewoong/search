@@ -17,13 +17,13 @@ public class QueryHandler  {
 
     private int mStart = 1;
 
-    private OnQueryResultListener mOnQueryResultListener;
+    private OnQueryResponseListener mOnQueryResultListener;
 
     public QueryHandler() {
 
     }
 
-    public void setOnQueryResultListener(OnQueryResultListener listener) {
+    public void setOnQueryResultListener(OnQueryResponseListener listener) {
         mOnQueryResultListener = listener;
     }
 
@@ -35,10 +35,10 @@ public class QueryHandler  {
 
                 NaverOpenAPIService gitHubService = NaverOpenAPIService.retrofit.create(NaverOpenAPIService.class);
 
-                Call<SearchResultWeb> call = gitHubService.repoContributors(keyword, mStart, Constants.DEFAULT_DISPALY);
+                Call<QueryResponseWeb> call = gitHubService.repoContributors(keyword, mStart, Constants.DEFAULT_DISPALY);
 
                 try{
-                    SearchResultWeb result = call.execute().body();
+                    QueryResponseWeb result = call.execute().body();
 
                     if(result == null) {
                         Log.i(TAG, "======== Result is null!!!!!!!");
@@ -59,7 +59,7 @@ public class QueryHandler  {
 
                     Log.i(TAG, "==================== next : " + mStart);
 
-                    mOnQueryResultListener.onSuccessQueryResult(infos);
+                    mOnQueryResultListener.onResponse(infos);
                 }
                 catch (IOException e) {
                     Log.i(TAG, "IOException : " + e.getMessage());
