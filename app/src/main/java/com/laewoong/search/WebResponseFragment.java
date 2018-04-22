@@ -1,6 +1,7 @@
 package com.laewoong.search;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,10 +24,15 @@ import java.util.List;
 
 public class WebResponseFragment extends Fragment {
 
-    private static final String TAG = WebResponseFragment.class.getSimpleName();
+    public static final String TAG = WebResponseFragment.class.getSimpleName();
+
+    private static final String KEY_ITEM_LIST = "com.laewoong.search.WebResponseFragment.KEY_ITEM_LIST";
+    private static final String KEY_QUERY = "com.laewoong.search.WebResponseFragment.KEY_QUERY";
+
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+    private LinkedList<WebInfo> mItemList;
 
     public void setQuery(String query) {
         mAdapter.setQuery(query);
@@ -40,6 +46,9 @@ public class WebResponseFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        setRetainInstance(true);
+
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_web_response, container, false);
 
@@ -53,22 +62,46 @@ public class WebResponseFragment extends Fragment {
         mLayoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-
-        // specify an adapter (see also next example)
-        List<WebInfo> list = new LinkedList<WebInfo>();
-        mAdapter = new MyAdapter(list);
-
+        mAdapter = new MyAdapter();
         mRecyclerView.setAdapter(mAdapter);
+
+        return view;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(KEY_QUERY, mAdapter.getQuery());
+        outState.putSerializable(KEY_ITEM_LIST, mItemList);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         try{
             OnReachedListEndListener listner = (OnReachedListEndListener)getActivity();
             mAdapter.setOnReachedListEndListener(listner);
         } catch (ClassCastException e) {
-            //TODO : finish
+            throw new ClassCastException(getActivity().toString() + " must implement OnReachedListEndListener");
         }
 
+        if (savedInstanceState != null) {
+            LinkedList<WebInfo> list = (LinkedList<WebInfo>) savedInstanceState.getSerializable(KEY_ITEM_LIST);
+            mItemList = list;
 
-        return view;
+            String query = savedInstanceState.getString(KEY_QUERY);
+            if(query != null) {
+                mAdapter.setQuery(query);
+            }
+
+        } else {
+            // specify an adapter
+            mItemList = new LinkedList<WebInfo>();
+        }
+
+        mAdapter.setItem(mItemList);
     }
 
     public void addItems(List<WebInfo> list) {
@@ -113,6 +146,13 @@ public class WebResponseFragment extends Fragment {
             notifyDataSetChanged();
         }
 
+        public void setItem(List<WebInfo> list) {
+            mDataset = list;
+        }
+
+        public MyAdapter() {
+
+        }
         // Provide a suitable constructor (depends on the kind of dataset)
         public MyAdapter(List<WebInfo> myDataset) {
             mDataset = myDataset;
@@ -121,6 +161,7 @@ public class WebResponseFragment extends Fragment {
         public void setQuery(String query) {
             mKeyword = query;
         }
+        public String getQuery() { return mKeyword; }
 
         // Create new views (invoked by the layout manager)
         @Override

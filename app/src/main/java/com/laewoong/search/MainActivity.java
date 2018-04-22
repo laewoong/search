@@ -2,7 +2,7 @@ package com.laewoong.search;
 
 import android.app.SearchManager;
 import android.content.Context;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, OnQueryResponseListener {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String TAG = MainActivity.class.getSimpleName();
 
     private QueryHandler mQueryHandler;
 
@@ -32,12 +32,25 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         mSearchView = (SearchView)findViewById(R.id.searchview_query);
         mFragmentContainer = (ViewGroup)findViewById(R.id.container_fragment);
 
-        mWebResponseFragment = new WebResponseFragment();
-
         init();
     }
 
     private void init() {
+
+        // find the retained fragment on activity restarts
+        FragmentManager fm = getSupportFragmentManager();
+        mWebResponseFragment = (WebResponseFragment) fm.findFragmentByTag(WebResponseFragment.TAG);
+
+        // create the fragment the first time
+        if (mWebResponseFragment == null) {
+
+            mWebResponseFragment = new WebResponseFragment();
+        }
+
+        fm.beginTransaction().replace(mFragmentContainer.getId(), mWebResponseFragment, mWebResponseFragment.getClass().getSimpleName()).commit();
+
+
+
         mQueryHandler.setOnQueryResultListener(this);
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -74,9 +87,7 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         mSearchView.setSubmitButtonEnabled(true);
         mSearchView.setQueryRefinementEnabled(true);
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(mFragmentContainer.getId(), mWebResponseFragment, mWebResponseFragment.getClass().getSimpleName());
-        transaction.commit();
+
     }
 
     @Override
