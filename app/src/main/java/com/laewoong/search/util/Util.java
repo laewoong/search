@@ -1,8 +1,11 @@
 package com.laewoong.search.util;
 
 import android.graphics.Typeface;
+import android.os.Build;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.style.StyleSpan;
 
 import java.util.regex.Matcher;
@@ -30,5 +33,14 @@ public class Util {
         }
 
         return str;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Spanned fromHtml(String html){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            return Html.fromHtml(html);
+        }
     }
 }

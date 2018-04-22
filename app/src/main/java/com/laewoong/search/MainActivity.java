@@ -2,26 +2,43 @@ package com.laewoong.search;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.os.PersistableBundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
-import android.view.ViewGroup;
+import android.view.View;
+import android.widget.Button;
 
+import com.laewoong.search.util.BackPressCloseHandler;
+
+import java.util.LinkedList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, OnQueryResponseListener {
+public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, OnQueryResponseListener, OnSelectedThumbnailListener {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
+    public static final String KEY_IS_IMAGE_TAP = "com.laewoong.search.MainActivity.KEY_IS_IMAGE_TAP";
+
     private QueryHandler mQueryHandler;
+
+    private View mRootView;
+    private View mFragmentContainer;
 
     private SearchView mSearchView;
 
-    private ViewGroup mFragmentContainer;
-    private WebResponseFragment mWebResponseFragment;
-    private ImageResponseFragment mImageResponseFragment;
+    private Button mWebTapButton;
+    private Button mImageTapButton;
+
+    private WebResponseFragment     mWebResponseFragment;
+    private ImageResponseFragment   mImageResponseFragment;
+    private DetailImageFragment     mDetailImageFragment;
+
+    private BackPressCloseHandler mBackPressCloseHandler;
+
+    private boolean mIsImageTap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,16 +47,36 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
         mQueryHandler = new QueryHandler();
 
+        mRootView = findViewById(R.id.container_root);
+        mFragmentContainer = findViewById(R.id.container_fragment);
+
         mSearchView = (SearchView)findViewById(R.id.searchview_query);
-        mFragmentContainer = (ViewGroup)findViewById(R.id.container_fragment);
+
+        mWebTapButton = (Button)findViewById(R.id.button_web);
+        mImageTapButton = (Button)findViewById(R.id.button_image);
 
         init();
+
+        mIsImageTap = false;
+
+        if(savedInstanceState != null) {
+
+            mIsImageTap = savedInstanceState.getBoolean(KEY_IS_IMAGE_TAP);
+        }
+
+        if(mIsImageTap == true) {
+            showImageTap();
+        }
+        else {
+            showWebTap();
+        }
     }
 
     private void init() {
 
         // find the retained fragment on activity restarts
         FragmentManager fm = getSupportFragmentManager();
+
         mWebResponseFragment = (WebResponseFragment) fm.findFragmentByTag(WebResponseFragment.TAG);
 
         // create the fragment the first time
@@ -56,36 +93,35 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             mImageResponseFragment = new ImageResponseFragment();
         }
 
-        //fm.beginTransaction().replace(mFragmentContainer.getId(), mWebResponseFragment, WebResponseFragment.TAG).commit();
-        fm.beginTransaction().replace(mFragmentContainer.getId(), mImageResponseFragment, ImageResponseFragment.TAG).commit();
-
-
-
         mQueryHandler.setOnQueryResultListener(this);
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
 
-                Log.i(TAG, "========== onQueryTextSubmit: " + query);
                 if(query.isEmpty()) {
                     return false;
                 }
 
-//                mWebResponseFragment.clearList();
-//                mWebResponseFragment.setQuery(query);
-//                mQueryHandler.queryWeb(query);
+                mSearchView.clearFocus();
 
-                mImageResponseFragment.clearList();
-                mImageResponseFragment.setQuery(query);
-                mQueryHandler.queryImage(query);
+                // TODO : 인터페이스 만들어서 코드 하나로 처리하여 분기문 제거하기.
+                if(mIsImageTap == true) {
+                    mImageResponseFragment.clearList();
+                    mImageResponseFragment.setQuery(query);
+                    mQueryHandler.queryImage(query);
+                }
+                else {
+                    mWebResponseFragment.clearList();
+                    mWebResponseFragment.setQuery(query);
+                    mQueryHandler.queryWeb(query);
+                }
 
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                Log.i(TAG, "========== onQueryTextChange: " + newText);
                 return false;
             }
         });
@@ -101,13 +137,33 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         mSearchView.setSubmitButtonEnabled(true);
         mSearchView.setQueryRefinementEnabled(true);
 
+        mWebTapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showWebTap();
+            }
+        });
 
+        mImageTapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showImageTap();
+            }
+        });
+
+        mBackPressCloseHandler = new BackPressCloseHandler(this);
     }
 
     @Override
     public void onReachedListEndListener(String keyword) {
-        //mQueryHandler.queryWeb(keyword);
-        mQueryHandler.queryImage(keyword);
+
+        // TODO : 인터페이스 만들어서 코드 하나로 처리하여 분기문 제거하기.
+        if(mIsImageTap == true) {
+            mQueryHandler.queryImage(keyword);
+        }
+        else {
+            mQueryHandler.queryWeb(keyword);
+        }
     }
 
     @Override
@@ -130,5 +186,61 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
                 mImageResponseFragment.addItems(list);
             }
         });
+    }
+
+    @Override
+    public void onSelectedThumbnail(List<ImageInfo> list, int position) {
+
+        FragmentManager fm = getSupportFragmentManager();
+        mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
+
+        // create the fragment the first time
+        if (mDetailImageFragment == null) {
+
+            mDetailImageFragment = new DetailImageFragment();
+        }
+
+        Bundle args = new Bundle();
+        args.putInt(DetailImageFragment.KEY_POSITION, position);
+        args.putSerializable(DetailImageFragment.KEY_ITEM_LIST, (LinkedList<ImageInfo>)list);
+        mDetailImageFragment.setArguments(args);
+
+        fm.beginTransaction().add(mRootView.getId(), mDetailImageFragment, DetailImageFragment.TAG).addToBackStack(null).commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
+        } else {
+            mBackPressCloseHandler.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+
+        outState.putBoolean(KEY_IS_IMAGE_TAP, mIsImageTap);
+
+        super.onSaveInstanceState(outState, outPersistentState);
+    }
+
+    private void showWebTap() {
+        Log.i("fff", "show web Tap");
+        mIsImageTap = false;
+        getSupportFragmentManager().beginTransaction().replace(mFragmentContainer.getId(), mWebResponseFragment, WebResponseFragment.TAG).commit();
+
+        mQueryHandler.queryWeb(mSearchView.getQuery().toString());
+        mSearchView.clearFocus();
+
+    }
+
+    private void showImageTap() {
+
+        mIsImageTap = true;
+        getSupportFragmentManager().beginTransaction().replace(mFragmentContainer.getId(), mImageResponseFragment, ImageResponseFragment.TAG).commit();
+
+        mQueryHandler.queryImage(mSearchView.getQuery().toString());
+        mSearchView.clearFocus();
     }
 }

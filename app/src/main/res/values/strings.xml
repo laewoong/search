@@ -3,6 +3,9 @@
 
     <string name="button_web">web</string>
     <string name="button_image">image</string>
+    <string name="button_prev">prev</string>
+    <string name="button_next">next</string>
 
     <string name="guide_input_keyword">검색어 입력</string>
+    <string name="guide_backpress_close">한번 더 누르면 종료됩니다.</string>
 </resources>

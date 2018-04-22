@@ -32,7 +32,6 @@ public class QueryHandler  {
         new Thread(new Runnable() {
             @Override
             public void run() {
-
                 NaverOpenAPIWebService service = NaverOpenAPIWebService.retrofit.create(NaverOpenAPIWebService.class);
 
                 Call<QueryResponseWeb> call = service.repoContributors(query, mStart, Constants.DEFAULT_DISPALY);
