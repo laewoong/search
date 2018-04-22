@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
     private ViewGroup mFragmentContainer;
     private WebResponseFragment mWebResponseFragment;
+    private ImageResponseFragment mImageResponseFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +48,16 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             mWebResponseFragment = new WebResponseFragment();
         }
 
-        fm.beginTransaction().replace(mFragmentContainer.getId(), mWebResponseFragment, mWebResponseFragment.getClass().getSimpleName()).commit();
+        mImageResponseFragment = (ImageResponseFragment) fm.findFragmentByTag(ImageResponseFragment.TAG);
+
+        // create the fragment the first time
+        if (mImageResponseFragment == null) {
+
+            mImageResponseFragment = new ImageResponseFragment();
+        }
+
+        //fm.beginTransaction().replace(mFragmentContainer.getId(), mWebResponseFragment, WebResponseFragment.TAG).commit();
+        fm.beginTransaction().replace(mFragmentContainer.getId(), mImageResponseFragment, ImageResponseFragment.TAG).commit();
 
 
 
@@ -62,9 +72,13 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
                     return false;
                 }
 
-                mWebResponseFragment.clearList();
-                mWebResponseFragment.setQuery(query);
-                mQueryHandler.queryWeb(query);
+//                mWebResponseFragment.clearList();
+//                mWebResponseFragment.setQuery(query);
+//                mQueryHandler.queryWeb(query);
+
+                mImageResponseFragment.clearList();
+                mImageResponseFragment.setQuery(query);
+                mQueryHandler.queryImage(query);
 
                 return false;
             }
@@ -92,16 +106,28 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
     @Override
     public void onReachedListEndListener(String keyword) {
-        mQueryHandler.queryWeb(keyword);
+        //mQueryHandler.queryWeb(keyword);
+        mQueryHandler.queryImage(keyword);
     }
 
     @Override
-    public void onResponse(final List<WebInfo> list) {
+    public void onResponseWeb(final List<WebInfo> list) {
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mWebResponseFragment.addItems(list);
+            }
+        });
+    }
+
+    @Override
+    public void onResponseImage(final List<ImageInfo> list) {
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mImageResponseFragment.addItems(list);
             }
         });
     }

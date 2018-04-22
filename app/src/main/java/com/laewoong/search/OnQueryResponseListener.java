@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface OnQueryResponseListener {
 
-    public void onResponse(List<WebInfo> list);
+    public void onResponseWeb(List<WebInfo> list);
+    public void onResponseImage(List<ImageInfo> list);
 }

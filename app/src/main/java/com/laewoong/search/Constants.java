@@ -11,4 +11,11 @@ public class Constants {
 
 
     public static final int DEFAULT_DISPALY  = 20;
+
+    public static final int DEFAULT_IMAGE_DISPALY  = 40;
+
+    public static final String DEFAULT_IMAGE_SORT  = "sim";
+    public static final String DEFAULT_IMAGE_FILTER  = "all";
+
+    public static final int DEFAULT_GRID_SPAN_COUNT = 2;
 }

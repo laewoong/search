@@ -11,7 +11,7 @@ import retrofit2.http.Query;
  * Created by laewoong on 2018. 4. 21..
  */
 
-public interface NaverOpenAPIService {
+public interface NaverOpenAPIWebService {
 
     @Headers({
             "X-Naver-Client-Id:" + Constants.CLIENT_ID,
