@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">search</string>
+
+    <string name="button_web">web</string>
+    <string name="button_image">image</string>
+
+    <string name="guide_input_keyword">검색어 입력</string>
+</resources>
