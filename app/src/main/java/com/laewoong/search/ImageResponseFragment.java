@@ -28,8 +28,8 @@ public class ImageResponseFragment extends Fragment {
 
     public static final String TAG = ImageResponseFragment.class.getSimpleName();
 
-    private static final String KEY_ITEM_LIST = "com.laewoong.search.WebResponseFragment.KEY_ITEM_LIST";
-    private static final String KEY_QUERY = "com.laewoong.search.WebResponseFragment.KEY_QUERY";
+    private static final String KEY_ITEM_LIST = "com.laewoong.search.ImageResponseFragment.KEY_ITEM_LIST";
+    private static final String KEY_QUERY = "com.laewoong.search.ImageResponseFragment.KEY_QUERY";
 
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
@@ -55,7 +55,7 @@ public class ImageResponseFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
+        Log.i(TAG, "ImageResponseFragment.onCreate() : " + this);
         setRetainInstance(true);
 
         // Inflate the layout for this fragment
@@ -90,6 +90,8 @@ public class ImageResponseFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        Log.i(TAG, "ImageResponseFragment.onActivityCreated() : " + this);
+
         try{
             OnReachedListEndListener listner = (OnReachedListEndListener)getActivity();
             mAdapter.setOnReachedListEndListener(listner);
@@ -103,6 +105,7 @@ public class ImageResponseFragment extends Fragment {
 
         if (savedInstanceState != null) {
             LinkedList<ImageInfo> list = (LinkedList<ImageInfo>) savedInstanceState.getSerializable(KEY_ITEM_LIST);
+
             mItemList = list;
 
             String query = savedInstanceState.getString(KEY_QUERY);
@@ -111,6 +114,7 @@ public class ImageResponseFragment extends Fragment {
             }
 
         } else {
+
             // specify an adapter
             mItemList = new LinkedList<ImageInfo>();
         }
@@ -161,6 +165,7 @@ public class ImageResponseFragment extends Fragment {
         }
 
         public void clearItems() {
+
             mDataset.clear();
             notifyDataSetChanged();
         }
@@ -202,6 +207,7 @@ public class ImageResponseFragment extends Fragment {
             final ImageInfo info = mDataset.get(position);
             if(info == null) {
                 //TODO throw exception
+
                 return;
             }
 
@@ -249,6 +255,7 @@ public class ImageResponseFragment extends Fragment {
         // Return the size of your dataset (invoked by the layout manager)
         @Override
         public int getItemCount() {
+
             return mDataset.size();
         }
     }

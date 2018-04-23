@@ -237,11 +237,9 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-
+    protected void onSaveInstanceState (Bundle outState) {
+        super.onSaveInstanceState(outState);
         outState.putBoolean(KEY_IS_IMAGE_TAP, mIsImageTap);
-
-        super.onSaveInstanceState(outState, outPersistentState);
     }
 
     private void showWebTap() {

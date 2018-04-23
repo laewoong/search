@@ -38,7 +38,7 @@ public class WebQueryTask implements Runnable {
     public void run() {
 
         NaverOpenAPIWebService service = NaverOpenAPIWebService.retrofit.create(NaverOpenAPIWebService.class);
-        Log.i("fff", "query : " + mQuery + "// mStart : " + mStart);
+
         Call<QueryResponseWeb> call = service.repoContributors(mQuery, mStart, Constants.DEFAULT_WEB_DISPALY);
 
         try{

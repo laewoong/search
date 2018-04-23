@@ -47,14 +47,13 @@ public class WebResponseFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        setRetainInstance(true);
+        Log.i(TAG, "WebResponseFragment.onCreate() : " + this);
 
-        Log.i("fff", "WebResponseFragment.onCreate() : " + this);
+        setRetainInstance(true);
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_web_response, container, false);
 
-        Log.i("fff", "WebResponseFragment.onCreate() savedInstanceState is null : " + this);
         mRecyclerView = (RecyclerView)view.findViewById(R.id.recyclelistview_search_result);
 
         // use this setting to improve performance if you know that changes
@@ -62,7 +61,7 @@ public class WebResponseFragment extends Fragment {
         mRecyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
-        mLayoutManager = new LinearLayoutManager(getContext());
+        mLayoutManager = new LinearLayoutManager(getContext().getApplicationContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         mAdapter = new MyAdapter();
@@ -76,7 +75,7 @@ public class WebResponseFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        Log.i("fff", "WebResponseFragment.onSaveInstanceState() : " + this);
+        Log.i(TAG, "WebResponseFragment.onSaveInstanceState() : " + this);
         outState.putString(KEY_QUERY, mAdapter.getQuery());
         outState.putSerializable(KEY_ITEM_LIST, mItemList);
     }
@@ -84,7 +83,7 @@ public class WebResponseFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.i("fff", "WebResponseFragment.onActivityCreated() : " + this);
+        Log.i(TAG, "WebResponseFragment.onActivityCreated() : " + this);
         try{
             OnReachedListEndListener listner = (OnReachedListEndListener)getActivity();
             mAdapter.setOnReachedListEndListener(listner);
