@@ -10,7 +10,7 @@ public class Constants {
     public static final String BASE_URL  = "https://openapi.naver.com/v1/search/";
 
 
-    public static final int DEFAULT_DISPALY  = 20;
+    public static final int DEFAULT_WEB_DISPALY = 20;
 
     public static final int DEFAULT_IMAGE_DISPALY  = 40;
 

@@ -16,7 +16,7 @@ import com.laewoong.search.util.BackPressCloseHandler;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, OnQueryResponseListener, OnSelectedThumbnailListener {
+public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, OnSelectedThumbnailListener {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
@@ -93,7 +93,31 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             mImageResponseFragment = new ImageResponseFragment();
         }
 
-        mQueryHandler.setOnQueryResultListener(this);
+        mQueryHandler.addWebQueryResultListener(new OnQueryResponseListener() {
+            @Override
+            public void onSuccessResponse() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        mWebResponseFragment.addItems(mQueryHandler.getLatestUpdatedWebInfoList());
+                    }
+                });
+            }
+        });
+
+        mQueryHandler.addImageQueryResultListener(new OnQueryResponseListener() {
+            @Override
+            public void onSuccessResponse() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        mImageResponseFragment.addItems(mQueryHandler.getLatestUpdatedImageInfoList());
+                    }
+                });
+            }
+        });
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -141,6 +165,8 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             @Override
             public void onClick(View view) {
                 showWebTap();
+                mWebResponseFragment.clearList();
+                mQueryHandler.queryWeb(mSearchView.getQuery().toString());
             }
         });
 
@@ -148,6 +174,8 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             @Override
             public void onClick(View view) {
                 showImageTap();
+                mImageResponseFragment.clearList();
+                mQueryHandler.queryImage(mSearchView.getQuery().toString());
             }
         });
 
@@ -159,33 +187,11 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
         // TODO : 인터페이스 만들어서 코드 하나로 처리하여 분기문 제거하기.
         if(mIsImageTap == true) {
-            mQueryHandler.queryImage(keyword);
+            mQueryHandler.queryImageMore();
         }
         else {
-            mQueryHandler.queryWeb(keyword);
+            mQueryHandler.queryWebMore();
         }
-    }
-
-    @Override
-    public void onResponseWeb(final List<WebInfo> list) {
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mWebResponseFragment.addItems(list);
-            }
-        });
-    }
-
-    @Override
-    public void onResponseImage(final List<ImageInfo> list) {
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mImageResponseFragment.addItems(list);
-            }
-        });
     }
 
     @Override
@@ -198,6 +204,19 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         if (mDetailImageFragment == null) {
 
             mDetailImageFragment = new DetailImageFragment();
+
+            mQueryHandler.addImageQueryResultListener(new OnQueryResponseListener() {
+                @Override
+                public void onSuccessResponse() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            mDetailImageFragment.addItems(mQueryHandler.getImageInfoList());
+                        }
+                    });
+                }
+            });
         }
 
         Bundle args = new Bundle();
@@ -226,11 +245,10 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
     }
 
     private void showWebTap() {
-        Log.i("fff", "show web Tap");
+
         mIsImageTap = false;
         getSupportFragmentManager().beginTransaction().replace(mFragmentContainer.getId(), mWebResponseFragment, WebResponseFragment.TAG).commit();
 
-        mQueryHandler.queryWeb(mSearchView.getQuery().toString());
         mSearchView.clearFocus();
 
     }
@@ -240,7 +258,6 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         mIsImageTap = true;
         getSupportFragmentManager().beginTransaction().replace(mFragmentContainer.getId(), mImageResponseFragment, ImageResponseFragment.TAG).commit();
 
-        mQueryHandler.queryImage(mSearchView.getQuery().toString());
         mSearchView.clearFocus();
     }
 }
