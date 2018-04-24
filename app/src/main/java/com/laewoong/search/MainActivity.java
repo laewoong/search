@@ -246,16 +246,11 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
         mIsImageTap = false;
         getSupportFragmentManager().beginTransaction().replace(mFragmentContainer.getId(), mWebResponseFragment, WebResponseFragment.TAG).commit();
-
-        mSearchView.clearFocus();
-
     }
 
     private void showImageTap() {
 
         mIsImageTap = true;
         getSupportFragmentManager().beginTransaction().replace(mFragmentContainer.getId(), mImageResponseFragment, ImageResponseFragment.TAG).commit();
-
-        mSearchView.clearFocus();
     }
 }
