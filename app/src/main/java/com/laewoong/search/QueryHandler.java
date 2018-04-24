@@ -1,6 +1,7 @@
 package com.laewoong.search;
 
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -10,15 +11,12 @@ import java.util.concurrent.Executors;
  * Created by laewoong on 2018. 4. 21..
  */
 
-public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, ImageQueryTask.OnImageQueryResponseListener {
+public class QueryHandler implements Serializable, WebQueryTask.OnWebQueryResponseListener, ImageQueryTask.OnImageQueryResponseListener {
 
     private static final String TAG = QueryHandler.class.getSimpleName();
 
     private List<WebInfo>   mWebInfoList;
     private List<ImageInfo> mImageInfoList;
-
-    private List<WebInfo>   mLatestUpdatedWebInfoList;
-    private List<ImageInfo> mLatestUpdatedImageInfoList;
 
     private List<OnQueryResponseListener> mWebQueryResultListenerList;
     private List<OnQueryResponseListener> mImageQueryResultListenerList;
@@ -28,12 +26,11 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
     private WebQueryTask mWebQueryTask;
     private ImageQueryTask mImageQueryTask;
 
+    private String mQuery;
+
     public QueryHandler() {
         mWebInfoList    = new LinkedList<WebInfo>();
         mImageInfoList  = new LinkedList<ImageInfo>();
-
-        mLatestUpdatedWebInfoList    = new LinkedList<WebInfo>();
-        mLatestUpdatedImageInfoList  = new LinkedList<ImageInfo>();
 
         mWebQueryResultListenerList = new LinkedList<OnQueryResponseListener>();
         mImageQueryResultListenerList = new LinkedList<OnQueryResponseListener>();
@@ -65,16 +62,13 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
         return mImageInfoList;
     }
 
-    public List<WebInfo> getLatestUpdatedWebInfoList() {
-        return mLatestUpdatedWebInfoList;
+    public String getQuery() {
+        return mQuery;
     }
-
-    public List<ImageInfo> getLatestUpdatedImageInfoList() {
-        return mLatestUpdatedImageInfoList;
-    }
-
 
     public void queryWeb(final String query) {
+
+        mQuery = query;
 
         mWebInfoList.clear();
 
@@ -89,6 +83,8 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
     }
 
     public void queryImage(final String query) {
+
+        mQuery = query;
 
         mImageInfoList.clear();
 
@@ -105,9 +101,6 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
     @Override
     public void onSuccessWebQueryResponse(List<WebInfo> infoList) {
 
-        mLatestUpdatedWebInfoList.clear();
-        mLatestUpdatedWebInfoList.addAll(infoList);
-
         mWebInfoList.addAll(infoList);
 
         if(mWebQueryResultListenerList.isEmpty()) {
@@ -122,9 +115,6 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
     @Override
     public void onSuccessImageQueryResponse(List<ImageInfo> infoList) {
 
-        mLatestUpdatedImageInfoList.clear();
-        mLatestUpdatedImageInfoList.addAll(infoList);
-
         mImageInfoList.addAll(infoList);
 
         if(mImageQueryResultListenerList.isEmpty()) {
@@ -134,6 +124,5 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
         for(OnQueryResponseListener listener : mImageQueryResultListenerList) {
             listener.onSuccessResponse();
         }
-
     }
 }

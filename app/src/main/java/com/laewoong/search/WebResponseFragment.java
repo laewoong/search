@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,14 +15,13 @@ import android.widget.TextView;
 import com.laewoong.search.util.Util;
 
 import java.lang.ref.WeakReference;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by laewoong on 2018. 4. 21..
  */
 
-public class WebResponseFragment extends Fragment {
+public class WebResponseFragment extends Fragment implements SearchContract.View {
 
     public static final String TAG = WebResponseFragment.class.getSimpleName();
 
@@ -33,16 +31,8 @@ public class WebResponseFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    private LinkedList<WebInfo> mItemList;
 
-    public void setQuery(String query) {
-        mAdapter.setQuery(query);
-    }
-
-    public void clearList() {
-        mAdapter.clearItems();
-    }
-
+    private SearchContract.Presenter mPresenter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -72,15 +62,6 @@ public class WebResponseFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        Log.i(TAG, "WebResponseFragment.onSaveInstanceState() : " + this);
-        outState.putString(KEY_QUERY, mAdapter.getQuery());
-        outState.putSerializable(KEY_ITEM_LIST, mItemList);
-    }
-
-    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         Log.i(TAG, "WebResponseFragment.onActivityCreated() : " + this);
@@ -91,25 +72,23 @@ public class WebResponseFragment extends Fragment {
             throw new ClassCastException(getActivity().toString() + " must implement OnReachedListEndListener");
         }
 
-        if (savedInstanceState != null) {
-            LinkedList<WebInfo> list = (LinkedList<WebInfo>) savedInstanceState.getSerializable(KEY_ITEM_LIST);
-            mItemList = list;
-
-            String query = savedInstanceState.getString(KEY_QUERY);
-            if(query != null) {
-                mAdapter.setQuery(query);
-            }
-
-        } else {
-            // specify an adapter
-            mItemList = new LinkedList<WebInfo>();
+        try{
+            mPresenter = (SearchContract.Presenter)getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Presenter");
         }
 
-        mAdapter.setItem(mItemList);
+        mAdapter.setQuery(mPresenter.getQuery());
+        mAdapter.setItem(mPresenter.getWebQueryResponseList());
     }
 
-    public void addItems(List<WebInfo> list) {
-        mAdapter.addItem(list);
+    @Override
+    public void updateQueryResult() {
+
+        mAdapter.setQuery(mPresenter.getQuery());
+        mAdapter.setItem(mPresenter.getWebQueryResponseList());
+        mAdapter.notifyDataSetChanged();
+
     }
 
     public static class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
@@ -138,18 +117,6 @@ public class WebResponseFragment extends Fragment {
             }
         }
 
-        public void addItem(List<WebInfo> infoList) {
-            if(mDataset != null) {
-                mDataset.addAll(infoList);
-                notifyDataSetChanged();
-            }
-        }
-
-        public void clearItems() {
-            mDataset.clear();
-            notifyDataSetChanged();
-        }
-
         public void setItem(List<WebInfo> list) {
             mDataset = list;
         }
@@ -165,7 +132,6 @@ public class WebResponseFragment extends Fragment {
         public void setQuery(String query) {
             mKeyword = query;
         }
-        public String getQuery() { return mKeyword; }
 
         // Create new views (invoked by the layout manager)
         @Override

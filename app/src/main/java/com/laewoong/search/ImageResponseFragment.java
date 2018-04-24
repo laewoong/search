@@ -24,7 +24,7 @@ import java.util.List;
  * Created by laewoong on 2018. 4. 22..
  */
 
-public class ImageResponseFragment extends Fragment {
+public class ImageResponseFragment extends Fragment implements SearchContract.View {
 
     public static final String TAG = ImageResponseFragment.class.getSimpleName();
 
@@ -34,23 +34,8 @@ public class ImageResponseFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    private LinkedList<ImageInfo> mItemList;
 
-    public void setQuery(String query) {
-
-        mAdapter.setQuery(query);
-    }
-
-    public void clearList() {
-
-        if(mAdapter == null) {
-            return;
-        }
-
-        mAdapter.clearItems();
-        mAdapter.notifyDataSetChanged();
-    }
-
+    private SearchContract.Presenter mPresenter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -79,51 +64,38 @@ public class ImageResponseFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        outState.putString(KEY_QUERY, mAdapter.getQuery());
-        outState.putSerializable(KEY_ITEM_LIST, mItemList);
-    }
-
-    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
         Log.i(TAG, "ImageResponseFragment.onActivityCreated() : " + this);
-
         try{
             OnReachedListEndListener listner = (OnReachedListEndListener)getActivity();
             mAdapter.setOnReachedListEndListener(listner);
-
-            OnSelectedThumbnailListener onSelectedThumbnailListener = (OnSelectedThumbnailListener)getActivity();
-            mAdapter.setOnSelectedThumbnailListener(onSelectedThumbnailListener);
-
         } catch (ClassCastException e) {
             throw new ClassCastException(getActivity().toString() + " must implement OnReachedListEndListener");
         }
 
-        if (savedInstanceState != null) {
-            LinkedList<ImageInfo> list = (LinkedList<ImageInfo>) savedInstanceState.getSerializable(KEY_ITEM_LIST);
-
-            mItemList = list;
-
-            String query = savedInstanceState.getString(KEY_QUERY);
-            if(query != null) {
-                mAdapter.setQuery(query);
-            }
-
-        } else {
-
-            // specify an adapter
-            mItemList = new LinkedList<ImageInfo>();
+        try{
+            OnSelectedThumbnailListener listner = (OnSelectedThumbnailListener)getActivity();
+            mAdapter.setOnSelectedThumbnailListener(listner);
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString() + " must implement OnSelectedThumbnailListener");
         }
 
-        mAdapter.setItem(mItemList);
+        try{
+            mPresenter = (SearchContract.Presenter)getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Presenter");
+        }
+
+        mAdapter.setQuery(mPresenter.getQuery());
+        mAdapter.setItem(mPresenter.getImageQueryResponseList());
     }
 
-    public void addItems(List<ImageInfo> list) {
-        mAdapter.addItem(list);
+    @Override
+    public void updateQueryResult() {
+        mAdapter.setQuery(mPresenter.getQuery());
+        mAdapter.setItem(mPresenter.getImageQueryResponseList());
+        mAdapter.notifyDataSetChanged();
     }
 
     public static class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
@@ -157,19 +129,6 @@ public class ImageResponseFragment extends Fragment {
             }
         }
 
-        public void addItem(List<ImageInfo> infoList) {
-            if(mDataset != null) {
-                mDataset.addAll(infoList);
-                notifyDataSetChanged();
-            }
-        }
-
-        public void clearItems() {
-
-            mDataset.clear();
-            notifyDataSetChanged();
-        }
-
         public void setItem(List<ImageInfo> list) {
             mDataset = list;
         }
@@ -182,7 +141,6 @@ public class ImageResponseFragment extends Fragment {
         public void setQuery(String query) {
             mKeyword = query;
         }
-        public String getQuery() { return mKeyword; }
 
         // Create new views (invoked by the layout manager)
         @Override

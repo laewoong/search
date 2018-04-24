@@ -2,7 +2,6 @@ package com.laewoong.search;
 
 import android.app.SearchManager;
 import android.content.Context;
-import android.os.PersistableBundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,11 +15,13 @@ import com.laewoong.search.util.BackPressCloseHandler;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, OnSelectedThumbnailListener {
+public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, OnSelectedThumbnailListener, SearchContract.Presenter {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
     public static final String KEY_IS_IMAGE_TAP = "com.laewoong.search.MainActivity.KEY_IS_IMAGE_TAP";
+
+    public static final String KEY_QUERY_HANDLER = "com.laewoong.search.MainActivity.KEY_QUERY_HANDLER";
 
     private QueryHandler mQueryHandler;
 
@@ -40,12 +41,21 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
     private boolean mIsImageTap;
 
+    private OnQueryResponseListener mWebQueryResponseListener;
+    private OnQueryResponseListener mImageQueryResponseListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mQueryHandler = new QueryHandler();
+        if(savedInstanceState != null) {
+            mQueryHandler = (QueryHandler)savedInstanceState.getSerializable(KEY_QUERY_HANDLER);
+        }
+
+        if(mQueryHandler == null) {
+            mQueryHandler = new QueryHandler();
+        }
 
         mRootView = findViewById(R.id.container_root);
         mFragmentContainer = findViewById(R.id.container_fragment);
@@ -72,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         }
     }
 
+
     private void init() {
 
         // find the retained fragment on activity restarts
@@ -93,31 +104,39 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             mImageResponseFragment = new ImageResponseFragment();
         }
 
-        mQueryHandler.addWebQueryResultListener(new OnQueryResponseListener() {
+        mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
+
+        mWebQueryResponseListener = new OnQueryResponseListener() {
             @Override
             public void onSuccessResponse() {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
 
-                        mWebResponseFragment.addItems(mQueryHandler.getLatestUpdatedWebInfoList());
+                        mWebResponseFragment.updateQueryResult();
                     }
                 });
             }
-        });
+        };
 
-        mQueryHandler.addImageQueryResultListener(new OnQueryResponseListener() {
+        mImageQueryResponseListener = new OnQueryResponseListener() {
             @Override
             public void onSuccessResponse() {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
 
-                        mImageResponseFragment.addItems(mQueryHandler.getLatestUpdatedImageInfoList());
+                        if(mImageResponseFragment.isVisible()) {
+                            mImageResponseFragment.updateQueryResult();
+                        }
+
+                        if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
+                            mDetailImageFragment.updateQueryResult();
+                        }
                     }
                 });
             }
-        });
+        };
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -129,15 +148,11 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
                 mSearchView.clearFocus();
 
-                // TODO : 인터페이스 만들어서 코드 하나로 처리하여 분기문 제거하기.
+                // TODO : 인터페이스 만들어서 코드 하나로 처리하여 분기문 제거하기. or state pattern
                 if(mIsImageTap == true) {
-                    mImageResponseFragment.clearList();
-                    mImageResponseFragment.setQuery(query);
                     mQueryHandler.queryImage(query);
                 }
                 else {
-                    mWebResponseFragment.clearList();
-                    mWebResponseFragment.setQuery(query);
                     mQueryHandler.queryWeb(query);
                 }
 
@@ -165,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             @Override
             public void onClick(View view) {
                 showWebTap();
-                mWebResponseFragment.clearList();
                 mQueryHandler.queryWeb(mSearchView.getQuery().toString());
             }
         });
@@ -174,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             @Override
             public void onClick(View view) {
                 showImageTap();
-                mImageResponseFragment.clearList();
                 mQueryHandler.queryImage(mSearchView.getQuery().toString());
             }
         });
@@ -204,19 +217,6 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         if (mDetailImageFragment == null) {
 
             mDetailImageFragment = new DetailImageFragment();
-
-            mQueryHandler.addImageQueryResultListener(new OnQueryResponseListener() {
-                @Override
-                public void onSuccessResponse() {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            mDetailImageFragment.addItems(mQueryHandler.getImageInfoList());
-                        }
-                    });
-                }
-            });
         }
 
         Bundle args = new Bundle();
@@ -240,6 +240,21 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
     protected void onSaveInstanceState (Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(KEY_IS_IMAGE_TAP, mIsImageTap);
+        outState.putSerializable(KEY_QUERY_HANDLER, mQueryHandler);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mQueryHandler.addWebQueryResultListener(mWebQueryResponseListener);
+        mQueryHandler.addImageQueryResultListener(mImageQueryResponseListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mQueryHandler.removeWebQueryResultListener(mWebQueryResponseListener);
+        mQueryHandler.removeImageQueryResultListener(mImageQueryResponseListener);
     }
 
     private void showWebTap() {
@@ -252,5 +267,20 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
         mIsImageTap = true;
         getSupportFragmentManager().beginTransaction().replace(mFragmentContainer.getId(), mImageResponseFragment, ImageResponseFragment.TAG).commit();
+    }
+
+    @Override
+    public String getQuery() {
+        return mQueryHandler.getQuery();
+    }
+
+    @Override
+    public List<WebInfo> getWebQueryResponseList() {
+        return mQueryHandler.getWebInfoList();
+    }
+
+    @Override
+    public List<ImageInfo> getImageQueryResponseList() {
+        return mQueryHandler.getImageInfoList();
     }
 }

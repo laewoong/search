@@ -26,18 +26,16 @@ import java.util.List;
  * Created by laewoong on 2018. 4. 22..
  */
 
-public class DetailImageFragment extends Fragment {
+public class DetailImageFragment extends Fragment implements SearchContract.View {
 
     public static final String TAG = DetailImageFragment.class.getSimpleName();
 
     public static final String KEY_POSITION = "com.laewoong.search.DetailImageFragment.KEY_POSITION";
     public static final String KEY_ITEM_LIST = "com.laewoong.search.DetailImageFragment.KEY_ITEM_LIST";
-    public static final String KEY_QUERY = "com.laewoong.search.DetailImageFragment.KEY_QUERY";
 
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    private LinkedList<ImageInfo> mItemList;
 
     private Button mPrevButton;
     private Button mNextButton;
@@ -45,14 +43,7 @@ public class DetailImageFragment extends Fragment {
 
     private int mPosition = 0;
 
-    public void setQuery(String query) {
-        mAdapter.setQuery(query);
-    }
-
-    public void clearList() {
-        mAdapter.clearItems();
-        mAdapter.notifyDataSetChanged();
-    }
+    private SearchContract.Presenter mPresenter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -74,21 +65,11 @@ public class DetailImageFragment extends Fragment {
         mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new MyAdapter(getContext().getApplicationContext());
+        mAdapter = new MyAdapter(getContext());
         mRecyclerView.setAdapter(mAdapter);
 
         mSnapHelper = new PagerSnapHelper();
         mSnapHelper.attachToRecyclerView(mRecyclerView);
-
-        mPosition = getArguments().getInt(KEY_POSITION);
-        mItemList = (LinkedList<ImageInfo>)getArguments().getSerializable(KEY_ITEM_LIST);
-        if(mItemList != null) {
-            mAdapter.setItem(new LinkedList<ImageInfo>());
-            mAdapter.addItem(mItemList);
-            mRecyclerView.scrollToPosition(mPosition);
-        }
-
-
 
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
@@ -98,6 +79,8 @@ public class DetailImageFragment extends Fragment {
                 if(newState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
                     View centerView = mSnapHelper.findSnapView(mLayoutManager);
                     mPosition = mLayoutManager.getPosition(centerView);
+
+                    setButtonVisibleState();
                 }
             }
         });
@@ -105,28 +88,7 @@ public class DetailImageFragment extends Fragment {
         mPrevButton = (Button)view.findViewById(R.id.button_prev);
         mNextButton = (Button)view.findViewById(R.id.button_next);
 
-        mPrevButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if(mPosition -1 < 0 ) {
-                    return;
-                }
-                mRecyclerView.smoothScrollToPosition(mPosition -1);
-            }
-        });
-
-        mNextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if(mPosition + 1 >= mItemList.size() ) {
-                    //TODO : load more data
-                    return;
-                }
-                mRecyclerView.smoothScrollToPosition(mPosition + 1);
-            }
-        });
+        mPosition = getArguments().getInt(KEY_POSITION);
 
         return view;
     }
@@ -134,9 +96,7 @@ public class DetailImageFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        outState.putString(KEY_QUERY, mAdapter.getQuery());
-        outState.putSerializable(KEY_ITEM_LIST, mItemList);
+        outState.putInt(KEY_POSITION, mPosition);
     }
 
     @Override
@@ -154,34 +114,82 @@ public class DetailImageFragment extends Fragment {
             throw new ClassCastException(getActivity().toString() + " must implement OnReachedListEndListener");
         }
 
-        if(mItemList == null) {
-            if (savedInstanceState != null) {
-                LinkedList<ImageInfo> list = (LinkedList<ImageInfo>) savedInstanceState.getSerializable(KEY_ITEM_LIST);
-                mItemList = list;
+        try{
+            mPresenter = (SearchContract.Presenter)getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Presenter");
+        }
 
-                String query = savedInstanceState.getString(KEY_QUERY);
-                if(query != null) {
-                    mAdapter.setQuery(query);
+        mAdapter.setQuery(mPresenter.getQuery());
+        mAdapter.setItem(mPresenter.getImageQueryResponseList());
+
+        mRecyclerView.scrollToPosition(mPosition);
+
+        mPrevButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                // if date reached the first
+                if(mPosition -1 < 0 ) {
+                    return;
                 }
 
-            } else {
-                // specify an adapter
-                mItemList = new LinkedList<ImageInfo>();
+                mRecyclerView.smoothScrollToPosition(mPosition -1);
             }
+        });
 
-            mAdapter.setItem(mItemList);
+        mNextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                // if data reaches the end
+                if(mPosition + 1 >= mAdapter.getItemCount()) {
+                    return;
+                }
+
+                mRecyclerView.smoothScrollToPosition(mPosition + 1);
+            }
+        });
+
+        if(savedInstanceState != null) {
+            mPosition = savedInstanceState.getInt(KEY_POSITION);
+        }
+
+        setButtonVisibleState();
+    }
+
+    private void setButtonVisibleState() {
+
+        if(mAdapter.getItemCount() == 1) {
+            mPrevButton.setVisibility(View.INVISIBLE);
+            mNextButton.setVisibility(View.INVISIBLE);
+        }
+        else if(mPosition == 0) { // if first item
+            mPrevButton.setVisibility(View.INVISIBLE);
+            mNextButton.setVisibility(View.VISIBLE);
+        }
+        else if(mPosition == (mAdapter.getItemCount()-1)) { // if last item
+            mPrevButton.setVisibility(View.VISIBLE);
+            mNextButton.setVisibility(View.INVISIBLE);
+        }
+        else {
+            mPrevButton.setVisibility(View.VISIBLE);
+            mNextButton.setVisibility(View.VISIBLE);
         }
     }
 
-    public void addItems(List<ImageInfo> list) {
-        mAdapter.addItem(list);
+    @Override
+    public void updateQueryResult() {
+
+        mAdapter.setQuery(mPresenter.getQuery());
+        mAdapter.setItem(mPresenter.getImageQueryResponseList());
+        mAdapter.notifyDataSetChanged();
     }
 
     public static class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         private Context mContext;
         private List<ImageInfo> mDataset;
         private String mKeyword;
-        private int mPosition;
 
         private WeakReference<OnReachedListEndListener> mOnReachedListEndListener;
         private WeakReference<OnSelectedThumbnailListener> mOnSelectedThumbnailListener;
@@ -207,31 +215,17 @@ public class DetailImageFragment extends Fragment {
             }
         }
 
-        public void addItem(List<ImageInfo> infoList) {
-            if(mDataset != null) {
-                mDataset.addAll(infoList);
-                notifyDataSetChanged();
-            }
-        }
-
-        public void clearItems() {
-            mDataset.clear();
-            notifyDataSetChanged();
-        }
-
         public void setItem(List<ImageInfo> list) {
             mDataset = list;
         }
 
         public MyAdapter(Context context) {
             this.mContext = context;
-
         }
 
         public void setQuery(String query) {
             mKeyword = query;
         }
-        public String getQuery() { return mKeyword; }
 
         // Create new views (invoked by the layout manager)
         @Override
@@ -246,40 +240,17 @@ public class DetailImageFragment extends Fragment {
             return vh;
         }
 
-        public int getPosition() {
-            return mPosition;
-        }
-
-
         // Replace the contents of a view (invoked by the layout manager)
         @Override
         public void onBindViewHolder(MyAdapter.ViewHolder holder, final int position) {
             // - get element from your dataset at this position
             // - replace the contents of the view with that element
 
-            mPosition = position;
             final ImageInfo info = mDataset.get(position);
             if(info == null) {
                 //TODO throw exception
                 return;
             }
-
-//            holder.mThumbnailImageView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    if(mOnSelectedThumbnailListener != null) {
-//                        OnSelectedThumbnailListener listener = mOnSelectedThumbnailListener.get();
-//                        if(listener != null) {
-//                            //TODO : validate list size;
-//                            listener.onSelectedThumbnail(mDataset, position);
-//
-//                            //TODO: add Loading bar
-//                            //TODO: network check. timeout.
-//                        }
-//                    }
-//
-//                }
-//            });
 
             String url = info.getLink();
             Picasso.with(mContext).load(url).into(holder.mDetailImageView);
