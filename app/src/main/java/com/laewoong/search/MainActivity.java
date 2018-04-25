@@ -21,8 +21,6 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
     public static final String KEY_IS_IMAGE_TAP = "com.laewoong.search.MainActivity.KEY_IS_IMAGE_TAP";
 
-    public static final String KEY_QUERY_HANDLER = "com.laewoong.search.MainActivity.KEY_QUERY_HANDLER";
-
     private QueryHandler mQueryHandler;
 
     private View mRootView;
@@ -49,13 +47,7 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if(savedInstanceState != null) {
-            mQueryHandler = (QueryHandler)savedInstanceState.getSerializable(KEY_QUERY_HANDLER);
-        }
-
-        if(mQueryHandler == null) {
-            mQueryHandler = new QueryHandler();
-        }
+        mQueryHandler = ((SearchApplication)getApplication()).getQueryHandler();
 
         mRootView = findViewById(R.id.container_root);
         mFragmentContainer = findViewById(R.id.container_fragment);
@@ -240,7 +232,6 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
     protected void onSaveInstanceState (Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(KEY_IS_IMAGE_TAP, mIsImageTap);
-        outState.putSerializable(KEY_QUERY_HANDLER, mQueryHandler);
     }
 
     @Override

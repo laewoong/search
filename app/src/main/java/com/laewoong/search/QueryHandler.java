@@ -1,7 +1,5 @@
 package com.laewoong.search;
 
-
-import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -11,7 +9,7 @@ import java.util.concurrent.Executors;
  * Created by laewoong on 2018. 4. 21..
  */
 
-public class QueryHandler implements Serializable, WebQueryTask.OnWebQueryResponseListener, ImageQueryTask.OnImageQueryResponseListener {
+public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, ImageQueryTask.OnImageQueryResponseListener {
 
     private static final String TAG = QueryHandler.class.getSimpleName();
 
