@@ -17,33 +17,47 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <android.support.constraint.ConstraintLayout
+    <info.hoang8f.android.segmented.SegmentedGroup
+        xmlns:segmentedgroup="http://schemas.android.com/apk/res-auto"
+        segmentedgroup:sc_border_width="1dp"
+        segmentedgroup:sc_corner_radius="0dp"
         android:id="@+id/container_tab"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/searchview_query">
+        app:layout_constraintTop_toBottomOf="@id/searchview_query"
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/button_web"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/button_image"
-            android:text="@string/button_web"/>
+            <RadioButton
+                android:id="@+id/button_web"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:checked="true"
+                android:gravity="center"
+                style="@style/RadioButton"
+                android:textAppearance="@style/TextAppearance.AppCompat.Menu"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/button_image"
+                android:text="@string/button_web"/>
 
-        <Button
-            android:id="@+id/button_image"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/button_web"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:text="@string/button_image"/>
+            <RadioButton
+                android:id="@+id/button_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                style="@style/RadioButton"
+                android:textAppearance="@style/TextAppearance.AppCompat.Menu"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/button_web"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:text="@string/button_image"/>
 
-    </android.support.constraint.ConstraintLayout>
+
+    </info.hoang8f.android.segmented.SegmentedGroup>
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/container_fragment"

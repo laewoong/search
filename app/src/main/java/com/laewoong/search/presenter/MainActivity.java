@@ -2,6 +2,7 @@ package com.laewoong.search.presenter;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,6 +24,8 @@ import com.laewoong.search.view.WebResponseFragment;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import info.hoang8f.android.segmented.SegmentedGroup;
 
 public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, SearchContract.Presenter {
 
@@ -65,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
         mWebTapButton = (Button)findViewById(R.id.button_web);
         mImageTapButton = (Button)findViewById(R.id.button_image);
+
+        SegmentedGroup tabGroup = (SegmentedGroup)findViewById(R.id.container_tab);
+        tabGroup.setTintColor(Color.parseColor("#F06292"));
 
         init();
 
