@@ -36,7 +36,7 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
     @Override
     public ResponseListAdapter createResponseListAdapter() {
 
-        MyAdapter apdater = new ImageResponseFragment.MyAdapter(getContext().getApplicationContext());
+        ImageResponseListAdapter apdater = new ImageResponseFragment.ImageResponseListAdapter(getContext().getApplicationContext());
         apdater.setOnSelectedItemListener(this);
         return apdater;
     }
@@ -51,7 +51,7 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
         mPresenter.onSelectedThumbnail(position);
     }
 
-    public static class MyAdapter extends ResponseFragment.ResponseListAdapter<MyAdapter.ViewHolder, ImageInfo>{
+    public static class ImageResponseListAdapter extends ResponseFragment.ResponseListAdapter<ImageResponseListAdapter.ViewHolder, ImageInfo>{
 
 
         private Context mContext;
@@ -72,7 +72,7 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
             }
         }
 
-        public MyAdapter(Context context) {
+        public ImageResponseListAdapter(Context context) {
             mContext = context;
         }
 
@@ -81,10 +81,10 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
         }
         // Create new views (invoked by the layout manager)
         @Override
-        public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public ImageResponseListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image_response, parent, false);
-            return new MyAdapter.ViewHolder(v);
+            return new ImageResponseListAdapter.ViewHolder(v);
         }
 
         @Override

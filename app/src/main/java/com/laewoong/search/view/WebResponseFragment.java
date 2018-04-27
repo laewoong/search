@@ -34,7 +34,7 @@ public class WebResponseFragment extends ResponseFragment<WebInfo> {
 
     @Override
     public ResponseListAdapter createResponseListAdapter() {
-        return new WebResponseAdapter();
+        return new WebResponseListAdapter();
     }
 
     @Override
@@ -43,7 +43,7 @@ public class WebResponseFragment extends ResponseFragment<WebInfo> {
     }
 
 
-    public static class WebResponseAdapter extends ResponseFragment.ResponseListAdapter<WebResponseAdapter.ViewHolder, WebInfo> {
+    public static class WebResponseListAdapter extends ResponseFragment.ResponseListAdapter<WebResponseListAdapter.ViewHolder, WebInfo> {
 
         public static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -59,19 +59,19 @@ public class WebResponseFragment extends ResponseFragment<WebInfo> {
             }
         }
 
-        public WebResponseAdapter() {
+        public WebResponseListAdapter() {
 
         }
 
         // Create new views (invoked by the layout manager)
         @Override
-        public WebResponseAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
-                                                       int viewType) {
+        public WebResponseListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
+                                                                    int viewType) {
             // create a new view
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_web_response, parent, false);
 
-            return new WebResponseAdapter.ViewHolder(v);
+            return new WebResponseListAdapter.ViewHolder(v);
         }
 
 

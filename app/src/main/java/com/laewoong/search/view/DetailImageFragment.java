@@ -58,7 +58,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
         mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new MyAdapter(getContext());
+        mAdapter = new DetailImageListAdapter(getContext());
         mRecyclerView.setAdapter(mAdapter);
 
         mSnapHelper = new PagerSnapHelper();
@@ -155,7 +155,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
 
     @Override
     public ResponseListAdapter createResponseListAdapter() {
-        return new MyAdapter(getContext());
+        return new DetailImageListAdapter(getContext());
     }
 
     @Override
@@ -184,7 +184,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
     }
 
 
-    public static class MyAdapter extends ResponseListAdapter<MyAdapter.ViewHolder, ImageInfo> {
+    public static class DetailImageListAdapter extends ResponseListAdapter<DetailImageListAdapter.ViewHolder, ImageInfo> {
 
         private Context mContext;
 
@@ -198,18 +198,18 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
             }
         }
 
-        public MyAdapter(Context context) {
+        public DetailImageListAdapter(Context context) {
             this.mContext = context;
         }
 
         @Override
-        public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
+        public DetailImageListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                        int viewType) {
 
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_detail_image, parent, false);
 
-            MyAdapter.ViewHolder vh = new MyAdapter.ViewHolder(v);
+            DetailImageListAdapter.ViewHolder vh = new DetailImageListAdapter.ViewHolder(v);
             return vh;
         }
 
