@@ -40,6 +40,7 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
     protected int mStart;
     protected OnQueryResponseListener<E> mOnWebQueryResponseListener;
     protected boolean mIsAlreadyArrivedFinalResponse;
+    protected Call<T> mCall;
 
     public QueryTask(NaverOpenAPIService service, String query, int start, OnQueryResponseListener<E> listener) {
 
@@ -63,7 +64,8 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
             return;
         }
 
-        getQuery().enqueue(new Callback<T>() {
+        mCall = getQuery();
+        mCall.enqueue(new Callback<T>() {
 
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
@@ -129,7 +131,7 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
             @Override
             public void onFailure(Call<T> call, Throwable t) {
 
-                if(Thread.currentThread().isInterrupted()) {
+                if((Thread.currentThread().isInterrupted()) || mCall.isCanceled()) {
                     return;
                 }
 
@@ -141,6 +143,13 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
 
     public boolean isAlreadyArrivedFinalResponse() {
         return mIsAlreadyArrivedFinalResponse;
+    }
+
+    public void cancle() {
+
+        if((mCall != null) & (mCall.isCanceled() == false)) {
+           mCall.cancel();
+        }
     }
 
     public abstract Call<T> getQuery();

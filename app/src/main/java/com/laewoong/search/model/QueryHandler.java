@@ -228,6 +228,14 @@ public class QueryHandler {
 
         mWebInfoList.clear();
 
+        if(mImageQueryTask != null) {
+            mImageQueryTask.cancle();
+        }
+
+        if(mWebQueryTask != null) {
+            mWebQueryTask.cancle();
+        }
+
         mWebQueryTask = new WebQueryTask(mService, query, mWebQueryResponseListener);
         mExecutorService.execute(mWebQueryTask);
     }
@@ -243,6 +251,14 @@ public class QueryHandler {
         mQuery = query.trim();
 
         mImageInfoList.clear();
+
+        if(mWebQueryTask != null) {
+            mWebQueryTask.cancle();
+        }
+
+        if(mImageQueryTask != null) {
+            mImageQueryTask.cancle();
+        }
 
         mImageQueryTask = new ImageQueryTask(mService, query, mImageQueryResponseListener);
 
