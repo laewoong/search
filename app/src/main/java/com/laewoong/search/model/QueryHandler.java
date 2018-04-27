@@ -229,7 +229,9 @@ public class QueryHandler {
     }
 
     public void queryWebMore() {
-        mExecutorService.execute(mWebQueryTask);
+        if(mWebQueryTask.isAlreadyArrivedFinalResponse() == false) {
+            mExecutorService.execute(mWebQueryTask);
+        }
     }
 
     public void queryImage(final String query) {
@@ -245,6 +247,8 @@ public class QueryHandler {
 
     public void queryImageMore() {
 
-        mExecutorService.execute(mImageQueryTask);
+        if(mImageQueryTask.isAlreadyArrivedFinalResponse() == false) {
+            mExecutorService.execute(mImageQueryTask);
+        }
     }
 }

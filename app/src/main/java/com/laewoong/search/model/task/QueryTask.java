@@ -38,6 +38,7 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
     protected String mQuery;
     protected int mStart;
     protected OnQueryResponseListener<E> mOnWebQueryResponseListener;
+    protected boolean mIsAlreadyArrivedFinalResponse;
 
     public QueryTask(NaverOpenAPIService service, String query, int start, OnQueryResponseListener<E> listener) {
 
@@ -45,6 +46,7 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
         mQuery = query;
         mStart = start;
         mOnWebQueryResponseListener = listener;
+        mIsAlreadyArrivedFinalResponse = false;
     }
 
     @Override
@@ -85,6 +87,7 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
                     if(mStart > result.getTotal()) {
                         if(mOnWebQueryResponseListener != null) {
 
+                            mIsAlreadyArrivedFinalResponse = true;
                             mOnWebQueryResponseListener.onFinalQueryResponse();
                         }
                     }
@@ -110,6 +113,10 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
             }
         });
 
+    }
+
+    public boolean isAlreadyArrivedFinalResponse() {
+        return mIsAlreadyArrivedFinalResponse;
     }
 
     public abstract Call<T> getQuery();
