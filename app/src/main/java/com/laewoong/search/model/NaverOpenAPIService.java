@@ -1,5 +1,7 @@
 package com.laewoong.search.model;
 
+import com.laewoong.search.model.response.QueryResponseImage;
+import com.laewoong.search.model.response.QueryResponseWeb;
 import com.laewoong.search.util.Constants;
 
 import retrofit2.Call;
@@ -13,17 +15,32 @@ import retrofit2.http.Query;
  * Created by laewoong on 2018. 4. 21..
  */
 
-public interface NaverOpenAPIWebService {
+public interface NaverOpenAPIService {
 
     @Headers({
             "X-Naver-Client-Id:" + Constants.CLIENT_ID,
             "X-Naver-Client-Secret:" + Constants.CLIENT_SECRET
     })
+
     @GET("webkr.json")
-    Call<QueryResponseWeb> repoContributors(
+    Call<QueryResponseWeb> queryWeb(
             @Query("query") String query,
             @Query("start") int start,
             @Query("display") int display);
+
+
+    @Headers({
+            "X-Naver-Client-Id:" + Constants.CLIENT_ID,
+            "X-Naver-Client-Secret:" + Constants.CLIENT_SECRET
+    })
+
+    @GET("image.json")
+    Call<QueryResponseImage> queryImage(
+            @Query("query") String query,
+            @Query("start") int start,
+            @Query("display") int display,
+            @Query("sort") String sort,
+            @Query("filter") String filter);
 
     public static final Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(Constants.BASE_URL)

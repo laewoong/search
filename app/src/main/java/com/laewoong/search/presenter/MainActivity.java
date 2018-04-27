@@ -12,9 +12,10 @@ import android.widget.Button;
 import com.laewoong.search.OnQueryResponseListener;
 import com.laewoong.search.OnReachedListEndListener;
 import com.laewoong.search.R;
-import com.laewoong.search.model.ImageInfo;
+import com.laewoong.search.model.response.ErrorCode;
+import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.model.QueryHandler;
-import com.laewoong.search.model.WebInfo;
+import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.util.BackPressCloseHandler;
 import com.laewoong.search.view.DetailImageFragment;
 import com.laewoong.search.view.ImageResponseFragment;
@@ -106,12 +107,40 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
 
         mWebQueryResponseListener = new OnQueryResponseListener() {
+
+            @Override
+            public void onFailNetwork() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final String errorMessage = getString(R.string.guide_check_network_state);
+                        mWebResponseFragment.showErrorMessage(errorMessage);
+                    }
+                });
+            }
+
             @Override
             public void onSuccessResponse() {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         mWebResponseFragment.updateQueryResult();
+                    }
+                });
+            }
+
+            @Override
+            public void onErrorQueryResponse(ErrorCode errorCode) {
+
+                // TODO : send info to server
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        final String errorMessage = getApplicationContext().getString(R.string.guide_internal_error);
+
+                        mWebResponseFragment.showErrorMessage(errorMessage);
                     }
                 });
             }
@@ -136,6 +165,25 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         };
 
         mImageQueryResponseListener = new OnQueryResponseListener() {
+
+            @Override
+            public void onFailNetwork() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        final String errorMessage = getString(R.string.guide_check_network_state);
+                        if(mImageResponseFragment.isVisible()) {
+                            mImageResponseFragment.showErrorMessage(errorMessage);
+                        }
+
+                        if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
+                            mDetailImageFragment.showErrorMessage(errorMessage);
+                        }
+                    }
+                });
+            }
+
             @Override
             public void onSuccessResponse() {
                 runOnUiThread(new Runnable() {
@@ -148,6 +196,28 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
                         if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
                             mDetailImageFragment.updateQueryResult();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onErrorQueryResponse(final ErrorCode errorCode) {
+
+                // TODO : send info to server
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        final String errorMessage = getApplicationContext().getString(R.string.guide_internal_error);
+
+                        if(mImageResponseFragment.isVisible()) {
+                            mImageResponseFragment.showErrorMessage(errorMessage);
+                        }
+
+                        if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
+                            mDetailImageFragment.showErrorMessage(errorMessage);
                         }
                     }
                 });

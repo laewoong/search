@@ -1,23 +1,17 @@
 package com.laewoong.search.view;
 
-import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.util.Linkify;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.laewoong.search.OnReachedListEndListener;
 import com.laewoong.search.R;
-import com.laewoong.search.presenter.SearchContract;
-import com.laewoong.search.model.WebInfo;
+import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.util.Util;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**

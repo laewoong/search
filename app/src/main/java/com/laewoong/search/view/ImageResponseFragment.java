@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.laewoong.search.util.Constants;
-import com.laewoong.search.model.ImageInfo;
+import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.R;
 import com.laewoong.search.util.Util;
 import com.squareup.picasso.Picasso;

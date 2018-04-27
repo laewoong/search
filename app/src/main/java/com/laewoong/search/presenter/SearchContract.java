@@ -1,7 +1,7 @@
 package com.laewoong.search.presenter;
 
-import com.laewoong.search.model.ImageInfo;
-import com.laewoong.search.model.WebInfo;
+import com.laewoong.search.model.response.ImageInfo;
+import com.laewoong.search.model.response.WebInfo;
 
 import java.util.List;
 
@@ -16,6 +16,7 @@ public interface SearchContract {
         void updateQueryResult();
         void handleEmptyQueryResult();
         void handleFinalQueryResult();
+        void showErrorMessage(String errorMessage);
     }
 
     interface Presenter {

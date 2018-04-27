@@ -14,7 +14,7 @@ import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import com.laewoong.search.model.ImageInfo;
+import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.OnReachedListEndListener;
 import com.laewoong.search.R;
 import com.laewoong.search.presenter.SearchContract;

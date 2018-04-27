@@ -1,4 +1,4 @@
-package com.laewoong.search.model;
+package com.laewoong.search.model.response;
 
 import com.google.gson.annotations.SerializedName;
 

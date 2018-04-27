@@ -1,7 +1,6 @@
-package com.laewoong.search.model;
+package com.laewoong.search.model.response;
 
 import com.google.gson.annotations.SerializedName;
-import com.laewoong.search.model.WebInfo;
 
 import java.util.List;
 
@@ -9,7 +8,7 @@ import java.util.List;
  * Created by laewoong on 2018. 4. 21..
  */
 
-public class QueryResponseWeb {
+public class QueryResponseWeb implements QueryResponse<WebInfo> {
 
     @SerializedName("lastBuildDate")
     private String lastBuildDate;
