@@ -1,6 +1,8 @@
 package com.laewoong.search.view;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
@@ -26,11 +28,14 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
 
         protected List<T> mDataset;
         protected String mKeyword;
+        protected Handler mUiHandler;
         protected boolean mIsInfinityScrollActive;
 
         protected WeakReference<OnReachedListEndListener> mOnReachedListEndListener;
 
         public ResponseListAdapter() {
+
+            mUiHandler = new Handler(Looper.getMainLooper());
             mIsInfinityScrollActive = true;
         }
 
@@ -52,6 +57,10 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         // Return the size of your dataset (invoked by the layout manager)
         @Override
         public int getItemCount() {
+
+            if(mDataset == null) {
+                return 0;
+            }
 
             return mDataset.size();
         }
@@ -92,7 +101,6 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
     protected RecyclerView mRecyclerView;
     protected ResponseListAdapter mAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
-
 
     public static String TAG = "";
 

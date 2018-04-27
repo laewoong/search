@@ -13,4 +13,9 @@ public class ErrorResponse {
 
     @SerializedName("errorCode")
     public String errorCode;
+
+    @Override
+    public String toString() {
+        return "errorMessage : " + errorMessage + ", errorCode : " + errorCode + "\n";
+    }
 }

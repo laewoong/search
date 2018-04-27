@@ -12,5 +12,6 @@
     <string name="guide_final_query_response">마지막 검색 결과 입니다.</string>
     <string name="guide_check_network_state">네트워크 연결 상태를 확인해 주세요.</string>
     <string name="guide_internal_error">요청이 실패했습니다.\n잠시후에 다시 시도해 주시기 바랍니다.\n문제가 지속될 경우 기술지원팀으로 문의하시기 바랍니다.</string>
+    <string name="guide_naver_max_start_value_policy">검색 한도를 초과하였습니다.\n더 많은 검색 결과를 원하시면 네이버 서비스를 이용해 주세요.</string>
 
 </resources>

@@ -12,7 +12,9 @@ public enum ErrorCode {
     SE04("SE04"),
     SE06("SE06"),
     SE05("SE05"),
-    SE99("SE99");
+    SE99("SE99"),
+
+    NAVER_MAX_START_VALUE_POLICY("NAVER_MAX_START_VALUE_POLICY");
 
     private String mErrorCode;
 

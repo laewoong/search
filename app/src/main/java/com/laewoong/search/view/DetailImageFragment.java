@@ -1,23 +1,29 @@
 package com.laewoong.search.view;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import com.bogdwellers.pinchtozoom.ImageMatrixTouchHandler;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.OnReachedListEndListener;
 import com.laewoong.search.R;
 import com.laewoong.search.presenter.SearchContract;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -82,6 +88,8 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
         mNextButton = (Button)view.findViewById(R.id.button_next);
 
         mPosition = getArguments().getInt(KEY_POSITION);
+
+        setButtonVisibleState();
 
         return view;
     }
@@ -165,7 +173,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
 
     private void setButtonVisibleState() {
 
-        if(mAdapter.getItemCount() == 1) {
+        if(mAdapter.getItemCount() <= 1) {
             mPrevButton.setVisibility(View.INVISIBLE);
             mNextButton.setVisibility(View.INVISIBLE);
         }
@@ -191,10 +199,14 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
         public static class ViewHolder extends RecyclerView.ViewHolder {
             // each data item is just a string in this case
             public ImageView mDetailImageView;
+            public ProgressBar mLoadingProgressbar;
 
             public ViewHolder(View v) {
                 super(v);
                 mDetailImageView = (ImageView)v.findViewById(R.id.imageview_detail);
+                mLoadingProgressbar = (ProgressBar)v.findViewById(R.id.progressbar_original_image_loading);
+
+                mDetailImageView.setOnTouchListener(new ImageMatrixTouchHandler(mDetailImageView.getContext()));
             }
         }
 
@@ -215,7 +227,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
 
 
         @Override
-        public void onBindView(ViewHolder holder, int position) {
+        public void onBindView(final ViewHolder holder, int position) {
             final ImageInfo info = mDataset.get(position);
             if(info == null) {
                 //TODO throw exception
@@ -223,7 +235,28 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
             }
 
             String url = info.getLink();
-            Picasso.with(mContext).load(url).priority(Picasso.Priority.HIGH).into(holder.mDetailImageView);
+
+            holder.mLoadingProgressbar.setVisibility(View.VISIBLE);
+
+            Picasso.with(mContext).load(url).priority(Picasso.Priority.HIGH).into(holder.mDetailImageView, new Callback() {
+                @Override
+                public void onSuccess() {
+
+                    holder.mLoadingProgressbar.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onError() {
+
+                    mUiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            Toast.makeText(mContext.getApplicationContext(), mContext.getString(R.string.guide_internal_error), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            });
         }
     }
 }

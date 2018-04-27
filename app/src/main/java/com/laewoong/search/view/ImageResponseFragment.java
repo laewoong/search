@@ -1,18 +1,22 @@
 package com.laewoong.search.view;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.laewoong.search.util.Constants;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.R;
 import com.laewoong.search.util.Util;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -111,7 +115,24 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
 
             String url = info.getThumbnail();
 
-            Picasso.with(mContext).load(url).into(holder.mThumbnailImageView);
+            Picasso.with(mContext).load(url).fit().centerCrop().into(holder.mThumbnailImageView, new Callback() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onError() {
+
+                    mUiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            Toast.makeText(mContext.getApplicationContext(), mContext.getString(R.string.guide_internal_error), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            });
         }
     }
 

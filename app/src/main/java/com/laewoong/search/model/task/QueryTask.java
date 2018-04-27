@@ -6,6 +6,7 @@ import com.laewoong.search.model.response.ErrorCode;
 import com.laewoong.search.model.response.ErrorResponse;
 import com.laewoong.search.model.NaverOpenAPIService;
 import com.laewoong.search.model.response.QueryResponse;
+import com.laewoong.search.util.Constants;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -51,6 +52,16 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
 
     @Override
     public void run() {
+
+        if(mStart > Constants.MAX_START_VALUE) {
+
+            if(mOnWebQueryResponseListener != null) {
+
+                mOnWebQueryResponseListener.onErrorQueryResponse(ErrorCode.NAVER_MAX_START_VALUE_POLICY);
+            }
+
+            return;
+        }
 
         getQuery().enqueue(new Callback<T>() {
 
@@ -98,7 +109,11 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
                     try{
 
                         ErrorResponse error = errorConverter.convert(response.errorBody());
-                        mOnWebQueryResponseListener.onErrorQueryResponse(ErrorCode.valueOf(error.errorCode));
+
+                        if(mOnWebQueryResponseListener != null) {
+
+                            mOnWebQueryResponseListener.onErrorQueryResponse(ErrorCode.valueOf(error.errorCode));
+                        }
 
                     }catch (IOException e) {
                         Log.i(TAG, "IOException : " + e.getMessage());

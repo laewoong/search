@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             }
 
             @Override
-            public void onErrorQueryResponse(ErrorCode errorCode) {
+            public void onErrorQueryResponse(final ErrorCode errorCode) {
 
                 // TODO : send info to server
 
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
                     @Override
                     public void run() {
 
-                        final String errorMessage = getApplicationContext().getString(R.string.guide_internal_error);
+                        final String errorMessage = (errorCode == ErrorCode.NAVER_MAX_START_VALUE_POLICY) ? getString(R.string.guide_naver_max_start_value_policy) : getApplicationContext().getString(R.string.guide_internal_error);
 
                         mWebResponseFragment.showErrorMessage(errorMessage);
                     }
@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
                     @Override
                     public void run() {
 
-                        final String errorMessage = getApplicationContext().getString(R.string.guide_internal_error);
+                        final String errorMessage = (errorCode == ErrorCode.NAVER_MAX_START_VALUE_POLICY) ? getString(R.string.guide_naver_max_start_value_policy) : getApplicationContext().getString(R.string.guide_internal_error);
 
                         if(mImageResponseFragment.isVisible()) {
                             mImageResponseFragment.showErrorMessage(errorMessage);
@@ -263,6 +263,8 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             @Override
             public boolean onQueryTextSubmit(String query) {
 
+                query = query.trim();
+
                 if(query.isEmpty()) {
                     return false;
                 }
@@ -301,9 +303,16 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             @Override
             public void onClick(View view) {
 
+                final String query = mSearchView.getQuery().toString().trim();
+
+                if(query.isEmpty()) {
+                    return;
+                }
+
+                mQueryHandler.queryWeb(query);
+
                 showWebTap();
                 mSearchView.clearFocus();
-                mQueryHandler.queryWeb(mSearchView.getQuery().toString());
             }
         });
 
@@ -311,9 +320,16 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             @Override
             public void onClick(View view) {
 
+                final String query = mSearchView.getQuery().toString().trim();
+
+                if(query.isEmpty()) {
+                    return;
+                }
+
+                mQueryHandler.queryImage(query);
+
                 showImageTap();
                 mSearchView.clearFocus();
-                mQueryHandler.queryImage(mSearchView.getQuery().toString());
             }
         });
 

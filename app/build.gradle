@@ -33,4 +33,6 @@ dependencies {
 
     implementation 'com.squareup.picasso:picasso:2.5.2'
 
+    compile 'com.bogdwellers:pinchtozoom:0.1'
+
 }

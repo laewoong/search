@@ -11,8 +11,9 @@ public class Constants {
 
 
     public static final int DEFAULT_WEB_DISPALY = 20;
-
     public static final int DEFAULT_IMAGE_DISPALY  = 40;
+
+    public static final int MAX_START_VALUE  = 1000;
 
     public static final String DEFAULT_IMAGE_SORT  = "sim";
     public static final String DEFAULT_IMAGE_FILTER  = "all";
