@@ -190,6 +190,10 @@ public class QueryHandler {
         };
     }
 
+    public void release() {
+
+        mExecutorService.shutdownNow();
+    }
     public void addWebQueryResultListener(OnQueryResponseListener listener) {
         mWebQueryResultListenerList.add(listener);
     }

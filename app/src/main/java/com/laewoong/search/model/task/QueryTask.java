@@ -68,6 +68,11 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
 
+                if(Thread.currentThread().isInterrupted()) {
+
+                    return;
+                }
+
                 if (response.isSuccessful()) {
 
                     T result = response.body();
@@ -123,6 +128,10 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
 
             @Override
             public void onFailure(Call<T> call, Throwable t) {
+
+                if(Thread.currentThread().isInterrupted()) {
+                    return;
+                }
 
                 mOnWebQueryResponseListener.onFailNetwork();
             }

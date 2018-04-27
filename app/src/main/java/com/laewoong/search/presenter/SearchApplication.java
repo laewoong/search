@@ -19,6 +19,12 @@ public class SearchApplication extends Application {
         mQueryHandler = new QueryHandler();
     }
 
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        mQueryHandler.release();
+    }
+
     public QueryHandler getQueryHandler() {
         return mQueryHandler;
     }
