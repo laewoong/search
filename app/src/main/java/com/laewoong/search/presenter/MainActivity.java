@@ -159,9 +159,14 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             @Override
             public void onFinalResponse() {
 
-                if(mWebResponseFragment != null) {
-                    mWebResponseFragment.handleFinalQueryResult();
-                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(mWebResponseFragment != null) {
+                            mWebResponseFragment.handleFinalQueryResult();
+                        }
+                    }
+                });
             }
         };
 
@@ -239,13 +244,18 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
             @Override
             public void onFinalResponse() {
 
-                if(mImageResponseFragment.isVisible()) {
-                    mImageResponseFragment.handleFinalQueryResult();
-                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(mImageResponseFragment.isVisible()) {
+                            mImageResponseFragment.handleFinalQueryResult();
+                        }
 
-                if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
-                    mDetailImageFragment.handleFinalQueryResult();
-                }
+                        if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
+                            mDetailImageFragment.handleFinalQueryResult();
+                        }
+                    }
+                });
             }
         };
 

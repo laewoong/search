@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +40,9 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
 
         public void setItem(List<T> list) {
             mDataset = list;
+        }
+        public void clearItem() {
+            mDataset.clear();
         }
 
         public void setQuery(String query) {
@@ -144,6 +146,9 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
     @Override
     public void handleEmptyQueryResult() {
 
+        mAdapter.clearItem();
+        mAdapter.notifyDataSetChanged();
+
         String message = String.format(getString(R.string.guide_empty_query_response), mPresenter.getQuery());
 
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
@@ -161,6 +166,7 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
     public void handleFinalQueryResult() {
 
         mAdapter.setInfinityScroll(false);
+        Toast.makeText(getContext(), getString(R.string.guide_final_query_response), Toast.LENGTH_LONG).show();
     }
 
     @Override
