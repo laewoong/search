@@ -21,6 +21,7 @@ import com.laewoong.search.view.DetailImageFragment;
 import com.laewoong.search.view.ImageResponseFragment;
 import com.laewoong.search.view.WebResponseFragment;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, SearchContract.Presenter {
@@ -289,7 +290,9 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         mWebTapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 showWebTap();
+                mSearchView.clearFocus();
                 mQueryHandler.queryWeb(mSearchView.getQuery().toString());
             }
         });
@@ -297,7 +300,9 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         mImageTapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 showImageTap();
+                mSearchView.clearFocus();
                 mQueryHandler.queryImage(mSearchView.getQuery().toString());
             }
         });
@@ -365,12 +370,14 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
 
     @Override
     public List<WebInfo> getWebQueryResponseList() {
-        return mQueryHandler.getWebInfoList();
+
+        return new LinkedList<WebInfo>(mQueryHandler.getWebInfoList());
     }
 
     @Override
     public List<ImageInfo> getImageQueryResponseList() {
-        return mQueryHandler.getImageInfoList();
+
+        return new LinkedList<ImageInfo>(mQueryHandler.getImageInfoList());
     }
 
     @Override
