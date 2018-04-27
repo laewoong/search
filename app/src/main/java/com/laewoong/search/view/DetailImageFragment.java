@@ -31,8 +31,6 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
     public static final String TAG = DetailImageFragment.class.getSimpleName();
 
     public static final String KEY_POSITION = "com.laewoong.search.view.DetailImageFragment.KEY_POSITION";
-    //public static final String KEY_ITEM_LIST = "com.laewoong.search.view.DetailImageFragment.KEY_ITEM_LIST";
-
 
     private Button mPrevButton;
     private Button mNextButton;
@@ -225,7 +223,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
             }
 
             String url = info.getLink();
-            Picasso.with(mContext).load(url).into(holder.mDetailImageView);
+            Picasso.with(mContext).load(url).priority(Picasso.Priority.HIGH).into(holder.mDetailImageView);
         }
     }
 }
