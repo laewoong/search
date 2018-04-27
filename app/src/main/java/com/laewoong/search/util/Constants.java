@@ -1,4 +1,4 @@
-package com.laewoong.search;
+package com.laewoong.search.util;
 
 /**
  * Created by laewoong on 2018. 4. 21..

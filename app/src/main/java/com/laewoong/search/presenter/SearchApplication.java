@@ -1,6 +1,8 @@
-package com.laewoong.search;
+package com.laewoong.search.presenter;
 
 import android.app.Application;
+
+import com.laewoong.search.model.QueryHandler;
 
 /**
  * Created by laewoong on 2018. 4. 25..

@@ -1,4 +1,4 @@
-package com.laewoong.search;
+package com.laewoong.search.util;
 
 import android.util.Log;
 

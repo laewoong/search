@@ -8,5 +8,7 @@ import java.util.List;
 
 public interface OnQueryResponseListener {
 
-    public void onSuccessResponse();
+    void onSuccessResponse();
+    void onEmptyResponse();
+    void onFinalResponse();
 }

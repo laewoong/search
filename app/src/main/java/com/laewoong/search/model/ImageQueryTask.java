@@ -1,6 +1,8 @@
-package com.laewoong.search;
+package com.laewoong.search.model;
 
 import android.util.Log;
+
+import com.laewoong.search.util.Constants;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,6 +18,8 @@ public class ImageQueryTask implements Runnable {
     public interface OnImageQueryResponseListener {
 
         void onSuccessImageQueryResponse(List<ImageInfo> infoList);
+        void onEmptyImageQueryResponse();
+        void onFinalImageQueryResponse();
     }
 
     public static final String TAG = ImageQueryTask.class.getSimpleName();
@@ -23,6 +27,7 @@ public class ImageQueryTask implements Runnable {
     private String mQuery;
     private int mStart;
     private OnImageQueryResponseListener mOnImageQueryResponseListener;
+    private boolean mIsReachTheEnd;
 
     public ImageQueryTask(String query, OnImageQueryResponseListener listener) {
         this(query, 1, listener);
@@ -32,6 +37,11 @@ public class ImageQueryTask implements Runnable {
         mQuery = query;
         mStart = start;
         mOnImageQueryResponseListener = listener;
+        mIsReachTheEnd = false;
+    }
+
+    public boolean isReachTheEnd() {
+        return mIsReachTheEnd;
     }
 
     @Override
@@ -52,21 +62,38 @@ public class ImageQueryTask implements Runnable {
             List<ImageInfo> imageInfoList = result.getItems();
 
             if(imageInfoList.isEmpty()) {
-                Log.i(TAG, "======== infos is null!!!!!!!");
+
+                if(mOnImageQueryResponseListener != null) {
+
+                    mOnImageQueryResponseListener.onEmptyImageQueryResponse();
+                }
                 return;
             }
 
-            //TODO : 검색 결과가 없을 경우
             //TODO : 에러난 경우
 
             mStart = result.getStart() + result.getDisplay();
 
+            if((mStart-1) <= result.getTotal()) {
+
+                if(mOnImageQueryResponseListener != null) {
+
+                    mOnImageQueryResponseListener.onSuccessImageQueryResponse(imageInfoList);
+                }
+
+                mStart = result.getStart() + result.getDisplay();
+            }
+
+            if(mStart > result.getTotal()) {
+                if(mOnImageQueryResponseListener != null) {
+
+                    mOnImageQueryResponseListener.onFinalImageQueryResponse();
+                }
+            }
+
             Log.i(TAG, "==================== next : " + mStart);
 
-            if(mOnImageQueryResponseListener != null) {
 
-                mOnImageQueryResponseListener.onSuccessImageQueryResponse(imageInfoList);
-            }
         }
         catch (IOException e) {
             Log.i(TAG, "IOException : " + e.getMessage());

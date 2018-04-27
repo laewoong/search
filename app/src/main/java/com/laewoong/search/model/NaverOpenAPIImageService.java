@@ -1,4 +1,6 @@
-package com.laewoong.search;
+package com.laewoong.search.model;
+
+import com.laewoong.search.util.Constants;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;

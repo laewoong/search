@@ -1,4 +1,7 @@
-package com.laewoong.search;
+package com.laewoong.search.presenter;
+
+import com.laewoong.search.model.ImageInfo;
+import com.laewoong.search.model.WebInfo;
 
 import java.util.List;
 
@@ -11,6 +14,8 @@ public interface SearchContract {
     interface View {
 
         void updateQueryResult();
+        void handleEmptyQueryResult();
+        void handleFinalQueryResult();
     }
 
     interface Presenter {
@@ -18,5 +23,6 @@ public interface SearchContract {
         String getQuery();
         List<WebInfo> getWebQueryResponseList();
         List<ImageInfo> getImageQueryResponseList();
+        void onSelectedThumbnail(int position);
     }
 }

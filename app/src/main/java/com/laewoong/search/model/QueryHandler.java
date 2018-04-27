@@ -1,4 +1,9 @@
-package com.laewoong.search;
+package com.laewoong.search.model;
+
+import android.util.Log;
+
+import com.laewoong.search.OnQueryResponseListener;
+import com.laewoong.search.util.LowPriorityThreadFactory;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -66,7 +71,7 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
 
     public void queryWeb(final String query) {
 
-        mQuery = query;
+        mQuery = query.trim();
 
         mWebInfoList.clear();
 
@@ -76,13 +81,12 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
     }
 
     public void queryWebMore() {
-
         mExecutorService.execute(mWebQueryTask);
     }
 
     public void queryImage(final String query) {
 
-        mQuery = query;
+        mQuery = query.trim();
 
         mImageInfoList.clear();
 
@@ -92,6 +96,10 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
     }
 
     public void queryImageMore() {
+
+        if(mImageQueryTask == null || mImageQueryTask.isReachTheEnd()) {
+            return;
+        }
 
         mExecutorService.execute(mImageQueryTask);
     }
@@ -111,6 +119,31 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
     }
 
     @Override
+    public void onEmptyWebQueryResponse() {
+        if(mWebQueryResultListenerList.isEmpty()) {
+            return;
+        }
+
+        for(OnQueryResponseListener listener : mWebQueryResultListenerList) {
+
+            listener.onEmptyResponse();
+        }
+    }
+
+    @Override
+    public void onFinalWebQueryResponse() {
+
+        if(mWebQueryResultListenerList.isEmpty()) {
+            return;
+        }
+
+        for(OnQueryResponseListener listener : mWebQueryResultListenerList) {
+            listener.onFinalResponse();
+        }
+
+    }
+
+    @Override
     public void onSuccessImageQueryResponse(List<ImageInfo> infoList) {
 
         mImageInfoList.addAll(infoList);
@@ -121,6 +154,32 @@ public class QueryHandler implements WebQueryTask.OnWebQueryResponseListener, Im
 
         for(OnQueryResponseListener listener : mImageQueryResultListenerList) {
             listener.onSuccessResponse();
+        }
+    }
+
+    @Override
+    public void onEmptyImageQueryResponse() {
+
+        if(mImageQueryResultListenerList.isEmpty()) {
+            return;
+        }
+
+        for(OnQueryResponseListener listener : mImageQueryResultListenerList) {
+
+            listener.onEmptyResponse();
+        }
+
+    }
+
+    @Override
+    public void onFinalImageQueryResponse() {
+
+        if(mImageQueryResultListenerList.isEmpty()) {
+            return;
+        }
+
+        for(OnQueryResponseListener listener : mImageQueryResultListenerList) {
+            listener.onFinalResponse();
         }
     }
 }

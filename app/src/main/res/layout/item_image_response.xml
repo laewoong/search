@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="10dp"
-    tools:context="com.laewoong.search.MainActivity">
+    tools:context="com.laewoong.search.presenter.MainActivity">
 
     <ImageView
         android:id="@+id/imageview_thumbnail"

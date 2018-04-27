@@ -1,6 +1,7 @@
-package com.laewoong.search;
+package com.laewoong.search.model;
 
 import com.google.gson.annotations.SerializedName;
+import com.laewoong.search.model.WebInfo;
 
 import java.util.List;
 

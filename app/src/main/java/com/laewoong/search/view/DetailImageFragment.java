@@ -1,14 +1,12 @@
-package com.laewoong.search;
+package com.laewoong.search.view;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,34 +14,31 @@ import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.laewoong.search.model.ImageInfo;
+import com.laewoong.search.OnReachedListEndListener;
+import com.laewoong.search.R;
+import com.laewoong.search.presenter.SearchContract;
 import com.squareup.picasso.Picasso;
 
-import java.lang.ref.WeakReference;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by laewoong on 2018. 4. 22..
  */
 
-public class DetailImageFragment extends Fragment implements SearchContract.View {
+public class DetailImageFragment extends ResponseFragment<ImageInfo> {
 
     public static final String TAG = DetailImageFragment.class.getSimpleName();
 
-    public static final String KEY_POSITION = "com.laewoong.search.DetailImageFragment.KEY_POSITION";
-    public static final String KEY_ITEM_LIST = "com.laewoong.search.DetailImageFragment.KEY_ITEM_LIST";
+    public static final String KEY_POSITION = "com.laewoong.search.view.DetailImageFragment.KEY_POSITION";
+    //public static final String KEY_ITEM_LIST = "com.laewoong.search.view.DetailImageFragment.KEY_ITEM_LIST";
 
-    private RecyclerView mRecyclerView;
-    private MyAdapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
 
     private Button mPrevButton;
     private Button mNextButton;
     private SnapHelper mSnapHelper;
 
     private int mPosition = 0;
-
-    private SearchContract.Presenter mPresenter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -107,9 +102,6 @@ public class DetailImageFragment extends Fragment implements SearchContract.View
             OnReachedListEndListener listner = (OnReachedListEndListener)getActivity();
             mAdapter.setOnReachedListEndListener(listner);
 
-            OnSelectedThumbnailListener onSelectedThumbnailListener = (OnSelectedThumbnailListener)getActivity();
-            mAdapter.setOnSelectedThumbnailListener(onSelectedThumbnailListener);
-
         } catch (ClassCastException e) {
             throw new ClassCastException(getActivity().toString() + " must implement OnReachedListEndListener");
         }
@@ -158,6 +150,21 @@ public class DetailImageFragment extends Fragment implements SearchContract.View
         setButtonVisibleState();
     }
 
+    @Override
+    public RecyclerView.LayoutManager createLayoutManager() {
+        return new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+    }
+
+    @Override
+    public ResponseListAdapter createResponseListAdapter() {
+        return new MyAdapter(getContext());
+    }
+
+    @Override
+    public List<ImageInfo> getResponseList() {
+        return mPresenter.getImageQueryResponseList();
+    }
+
     private void setButtonVisibleState() {
 
         if(mAdapter.getItemCount() == 1) {
@@ -178,33 +185,11 @@ public class DetailImageFragment extends Fragment implements SearchContract.View
         }
     }
 
-    @Override
-    public void updateQueryResult() {
 
-        mAdapter.setQuery(mPresenter.getQuery());
-        mAdapter.setItem(mPresenter.getImageQueryResponseList());
-        mAdapter.notifyDataSetChanged();
-    }
+    public static class MyAdapter extends ResponseListAdapter<MyAdapter.ViewHolder, ImageInfo> {
 
-    public static class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         private Context mContext;
-        private List<ImageInfo> mDataset;
-        private String mKeyword;
 
-        private WeakReference<OnReachedListEndListener> mOnReachedListEndListener;
-        private WeakReference<OnSelectedThumbnailListener> mOnSelectedThumbnailListener;
-
-        public void setOnReachedListEndListener(OnReachedListEndListener listener) {
-            mOnReachedListEndListener = new WeakReference<OnReachedListEndListener>(listener);
-        }
-
-        public void setOnSelectedThumbnailListener(OnSelectedThumbnailListener listener) {
-            mOnSelectedThumbnailListener = new WeakReference<OnSelectedThumbnailListener>(listener);;
-        }
-
-        // Provide a reference to the views for each data item
-        // Complex data items may need more than one view per item, and
-        // you provide access to all the views for a data item in a view holder
         public static class ViewHolder extends RecyclerView.ViewHolder {
             // each data item is just a string in this case
             public ImageView mDetailImageView;
@@ -215,37 +200,24 @@ public class DetailImageFragment extends Fragment implements SearchContract.View
             }
         }
 
-        public void setItem(List<ImageInfo> list) {
-            mDataset = list;
-        }
-
         public MyAdapter(Context context) {
             this.mContext = context;
         }
 
-        public void setQuery(String query) {
-            mKeyword = query;
-        }
-
-        // Create new views (invoked by the layout manager)
         @Override
         public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                        int viewType) {
-            // create a new view
+
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_detail_image, parent, false);
-            // set the view's size, margins, paddings and layout parameters
 
             MyAdapter.ViewHolder vh = new MyAdapter.ViewHolder(v);
             return vh;
         }
 
-        // Replace the contents of a view (invoked by the layout manager)
-        @Override
-        public void onBindViewHolder(MyAdapter.ViewHolder holder, final int position) {
-            // - get element from your dataset at this position
-            // - replace the contents of the view with that element
 
+        @Override
+        public void onBindView(ViewHolder holder, int position) {
             final ImageInfo info = mDataset.get(position);
             if(info == null) {
                 //TODO throw exception
@@ -254,27 +226,6 @@ public class DetailImageFragment extends Fragment implements SearchContract.View
 
             String url = info.getLink();
             Picasso.with(mContext).load(url).into(holder.mDetailImageView);
-
-            if(position == getItemCount() - 1) {
-
-                if(mOnReachedListEndListener != null) {
-                    OnReachedListEndListener listener = mOnReachedListEndListener.get();
-                    if(listener != null) {
-                        //TODO : validate list size;
-                        listener.onReachedListEndListener(mKeyword);
-
-                        //TODO: add Loading bar
-                        //TODO: network check. timeout.
-                    }
-                }
-
-            }
-        }
-
-        // Return the size of your dataset (invoked by the layout manager)
-        @Override
-        public int getItemCount() {
-            return mDataset.size();
         }
     }
 }

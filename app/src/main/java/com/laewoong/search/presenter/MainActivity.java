@@ -1,4 +1,4 @@
-package com.laewoong.search;
+package com.laewoong.search.presenter;
 
 import android.app.SearchManager;
 import android.content.Context;
@@ -6,20 +6,27 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.laewoong.search.OnQueryResponseListener;
+import com.laewoong.search.OnReachedListEndListener;
+import com.laewoong.search.R;
+import com.laewoong.search.model.ImageInfo;
+import com.laewoong.search.model.QueryHandler;
+import com.laewoong.search.model.WebInfo;
 import com.laewoong.search.util.BackPressCloseHandler;
+import com.laewoong.search.view.DetailImageFragment;
+import com.laewoong.search.view.ImageResponseFragment;
+import com.laewoong.search.view.WebResponseFragment;
 
-import java.util.LinkedList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, OnSelectedThumbnailListener, SearchContract.Presenter {
+public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, SearchContract.Presenter {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
-    public static final String KEY_IS_IMAGE_TAP = "com.laewoong.search.MainActivity.KEY_IS_IMAGE_TAP";
+    public static final String KEY_IS_IMAGE_TAP = "com.laewoong.search.presenter.MainActivity.KEY_IS_IMAGE_TAP";
 
     private QueryHandler mQueryHandler;
 
@@ -104,10 +111,27 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
                         mWebResponseFragment.updateQueryResult();
                     }
                 });
+            }
+
+            @Override
+            public void onEmptyResponse() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mWebResponseFragment.handleEmptyQueryResult();
+                    }
+                });
+            }
+
+            @Override
+            public void onFinalResponse() {
+
+                if(mWebResponseFragment != null) {
+                    mWebResponseFragment.handleFinalQueryResult();
+                }
             }
         };
 
@@ -127,6 +151,30 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
                         }
                     }
                 });
+            }
+
+            @Override
+            public void onEmptyResponse() {
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        mImageResponseFragment.handleEmptyQueryResult();
+                    }
+                });
+            }
+
+            @Override
+            public void onFinalResponse() {
+
+                if(mImageResponseFragment.isVisible()) {
+                    mImageResponseFragment.handleFinalQueryResult();
+                }
+
+                if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
+                    mDetailImageFragment.handleFinalQueryResult();
+                }
             }
         };
 
@@ -200,26 +248,6 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
     }
 
     @Override
-    public void onSelectedThumbnail(List<ImageInfo> list, int position) {
-
-        FragmentManager fm = getSupportFragmentManager();
-        mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
-
-        // create the fragment the first time
-        if (mDetailImageFragment == null) {
-
-            mDetailImageFragment = new DetailImageFragment();
-        }
-
-        Bundle args = new Bundle();
-        args.putInt(DetailImageFragment.KEY_POSITION, position);
-        args.putSerializable(DetailImageFragment.KEY_ITEM_LIST, (LinkedList<ImageInfo>)list);
-        mDetailImageFragment.setArguments(args);
-
-        fm.beginTransaction().add(mRootView.getId(), mDetailImageFragment, DetailImageFragment.TAG).addToBackStack(null).commit();
-    }
-
-    @Override
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
@@ -273,5 +301,24 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
     @Override
     public List<ImageInfo> getImageQueryResponseList() {
         return mQueryHandler.getImageInfoList();
+    }
+
+    @Override
+    public void onSelectedThumbnail(int position) {
+
+        FragmentManager fm = getSupportFragmentManager();
+        mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
+
+        // create the fragment the first time
+        if (mDetailImageFragment == null) {
+
+            mDetailImageFragment = new DetailImageFragment();
+        }
+
+        Bundle args = new Bundle();
+        args.putInt(DetailImageFragment.KEY_POSITION, position);
+        mDetailImageFragment.setArguments(args);
+
+        fm.beginTransaction().add(mRootView.getId(), mDetailImageFragment, DetailImageFragment.TAG).addToBackStack(null).commit();
     }
 }

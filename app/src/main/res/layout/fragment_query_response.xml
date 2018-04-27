@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.laewoong.search.MainActivity">
+    tools:context="com.laewoong.search.presenter.MainActivity">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclelistview_search_result"

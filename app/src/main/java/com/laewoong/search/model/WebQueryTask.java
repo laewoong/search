@@ -1,6 +1,8 @@
-package com.laewoong.search;
+package com.laewoong.search.model;
 
 import android.util.Log;
+
+import com.laewoong.search.util.Constants;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,6 +18,8 @@ public class WebQueryTask implements Runnable {
     public interface OnWebQueryResponseListener {
 
         void onSuccessWebQueryResponse(List<WebInfo> infoList);
+        void onEmptyWebQueryResponse();
+        void onFinalWebQueryResponse();
     }
 
     public static final String TAG = WebQueryTask.class.getSimpleName();
@@ -53,20 +57,38 @@ public class WebQueryTask implements Runnable {
 
             if(webInfoList.isEmpty()) {
                 Log.i(TAG, "======== infos is null!!!!!!!");
+
+                if(mOnWebQueryResponseListener != null) {
+
+                    mOnWebQueryResponseListener.onEmptyWebQueryResponse();
+                }
                 return;
             }
 
-            //TODO : 검색 결과가 없을 경우
-            //TODO : 에러난 경우
+            //TODO : 에러난 경우          7uygdcsx
 
             mStart = result.getStart() + result.getDisplay();
 
+            if((mStart-1) <= result.getTotal()) {
+
+                if(mOnWebQueryResponseListener != null) {
+
+                    mOnWebQueryResponseListener.onSuccessWebQueryResponse(webInfoList);
+                }
+
+                mStart = result.getStart() + result.getDisplay();
+            }
+
+            if(mStart > result.getTotal()) {
+                if(mOnWebQueryResponseListener != null) {
+
+                    mOnWebQueryResponseListener.onFinalWebQueryResponse();
+                }
+            }
+
             Log.i(TAG, "==================== next : " + mStart);
 
-            if(mOnWebQueryResponseListener != null) {
 
-                mOnWebQueryResponseListener.onSuccessWebQueryResponse(webInfoList);
-            }
         }
         catch (IOException e) {
             Log.i(TAG, "IOException : " + e.getMessage());
