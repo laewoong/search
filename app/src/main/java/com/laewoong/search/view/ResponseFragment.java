@@ -11,9 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.laewoong.search.OnReachedListEndListener;
 import com.laewoong.search.R;
-import com.laewoong.search.presenter.SearchContract;
+import com.laewoong.search.SearchContract;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -31,7 +30,7 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         protected Handler mUiHandler;
         protected boolean mIsInfinityScrollActive;
 
-        protected WeakReference<OnReachedListEndListener> mOnReachedListEndListener;
+        protected WeakReference<SearchContract.Presenter> mPresenter;;
 
         public ResponseListAdapter() {
 
@@ -39,8 +38,8 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
             mIsInfinityScrollActive = true;
         }
 
-        public void setOnReachedListEndListener(OnReachedListEndListener listener) {
-            mOnReachedListEndListener = new WeakReference<OnReachedListEndListener>(listener);
+        public void setPresenter(SearchContract.Presenter presenter) {
+            mPresenter = new WeakReference<SearchContract.Presenter>(presenter);
         }
 
         public void setItem(List<T> list) {
@@ -73,18 +72,14 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
 
             if(mIsInfinityScrollActive && (position == getItemCount() - 1)) {
 
-                if(mOnReachedListEndListener != null) {
-                    OnReachedListEndListener listener = mOnReachedListEndListener.get();
-                    if(listener != null) {
+                if(mPresenter != null) {
+                    SearchContract.Presenter presenter = mPresenter.get();
+                    if(presenter != null) {
 
-                        //TODO : validate list size;
-                        listener.onReachedListEndListener(mKeyword);
-
+                        presenter.loadMoreQueryResult();;
                         //TODO: add Loading bar
-                        //TODO: network check. timeout.
                     }
                 }
-
             }
         }
 
@@ -135,14 +130,8 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         super.onActivityCreated(savedInstanceState);
 
         try{
-            OnReachedListEndListener listner = (OnReachedListEndListener)getActivity();
-            mAdapter.setOnReachedListEndListener(listner);
-        } catch (ClassCastException e) {
-            throw new ClassCastException(getActivity().toString() + " must implement OnReachedListEndListener");
-        }
-
-        try{
             mPresenter = (SearchContract.Presenter)getActivity();
+            mAdapter.setPresenter(mPresenter);
         } catch (ClassCastException e) {
             throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Presenter");
         }

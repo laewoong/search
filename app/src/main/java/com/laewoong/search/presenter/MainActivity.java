@@ -11,8 +11,8 @@ import android.view.View;
 import android.widget.Button;
 
 import com.laewoong.search.OnQueryResponseListener;
-import com.laewoong.search.OnReachedListEndListener;
 import com.laewoong.search.R;
+import com.laewoong.search.SearchContract;
 import com.laewoong.search.model.response.ErrorCode;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.model.QueryHandler;
@@ -27,7 +27,7 @@ import java.util.List;
 
 import info.hoang8f.android.segmented.SegmentedGroup;
 
-public class MainActivity extends AppCompatActivity implements OnReachedListEndListener, SearchContract.Presenter {
+public class MainActivity extends AppCompatActivity implements SearchContract.Presenter {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
@@ -343,18 +343,6 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
     }
 
     @Override
-    public void onReachedListEndListener(String keyword) {
-
-        // TODO : 인터페이스 만들어서 코드 하나로 처리하여 분기문 제거하기.
-        if(mIsImageTap == true) {
-            mQueryHandler.queryImageMore();
-        }
-        else {
-            mQueryHandler.queryWebMore();
-        }
-    }
-
-    @Override
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
@@ -429,5 +417,17 @@ public class MainActivity extends AppCompatActivity implements OnReachedListEndL
         mDetailImageFragment.setArguments(args);
 
         fm.beginTransaction().add(mRootView.getId(), mDetailImageFragment, DetailImageFragment.TAG).addToBackStack(null).commit();
+    }
+
+    @Override
+    public void loadMoreQueryResult() {
+
+        // TODO : 인터페이스 만들어서 코드 하나로 처리하여 분기문 제거하기.
+        if(mIsImageTap == true) {
+            mQueryHandler.queryImageMore();
+        }
+        else {
+            mQueryHandler.queryWebMore();
+        }
     }
 }

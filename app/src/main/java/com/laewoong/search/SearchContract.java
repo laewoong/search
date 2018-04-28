@@ -1,4 +1,4 @@
-package com.laewoong.search.presenter;
+package com.laewoong.search;
 
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.model.response.WebInfo;
@@ -25,5 +25,6 @@ public interface SearchContract {
         List<WebInfo> getWebQueryResponseList();
         List<ImageInfo> getImageQueryResponseList();
         void onSelectedThumbnail(int position);
+        void loadMoreQueryResult();
     }
 }

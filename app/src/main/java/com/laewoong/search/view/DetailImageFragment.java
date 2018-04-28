@@ -1,14 +1,12 @@
 package com.laewoong.search.view;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,9 +18,8 @@ import android.widget.Toast;
 
 import com.bogdwellers.pinchtozoom.ImageMatrixTouchHandler;
 import com.laewoong.search.model.response.ImageInfo;
-import com.laewoong.search.OnReachedListEndListener;
 import com.laewoong.search.R;
-import com.laewoong.search.presenter.SearchContract;
+import com.laewoong.search.SearchContract;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -105,15 +102,8 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
         super.onActivityCreated(savedInstanceState);
 
         try{
-            OnReachedListEndListener listner = (OnReachedListEndListener)getActivity();
-            mAdapter.setOnReachedListEndListener(listner);
-
-        } catch (ClassCastException e) {
-            throw new ClassCastException(getActivity().toString() + " must implement OnReachedListEndListener");
-        }
-
-        try{
             mPresenter = (SearchContract.Presenter)getActivity();
+            mAdapter.setPresenter(mPresenter);
         } catch (ClassCastException e) {
             throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Presenter");
         }
