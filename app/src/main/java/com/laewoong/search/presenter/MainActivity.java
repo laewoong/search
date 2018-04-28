@@ -7,8 +7,10 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.RadioButton;
 
 import com.laewoong.search.model.OnQueryResponseListener;
 import com.laewoong.search.R;
@@ -20,6 +22,7 @@ import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.util.BackPressCloseHandler;
 import com.laewoong.search.view.DetailImageFragment;
 import com.laewoong.search.view.ImageResponseFragment;
+import com.laewoong.search.view.ResponseFragment;
 import com.laewoong.search.view.WebResponseFragment;
 
 import java.util.LinkedList;
@@ -40,11 +43,11 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
 
     private SearchView mSearchView;
 
-    private Button mWebTapButton;
-    private Button mImageTapButton;
+    private RadioButton mWebTabButton;
+    private RadioButton mImageTabButton;
 
-    private WebResponseFragment     mWebResponseFragment;
-    private ImageResponseFragment   mImageResponseFragment;
+    private ResponseFragment mWebResponseFragment;
+    private ResponseFragment   mImageResponseFragment;
     private DetailImageFragment     mDetailImageFragment;
 
     private BackPressCloseHandler mBackPressCloseHandler;
@@ -66,8 +69,8 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
 
         mSearchView = (SearchView)findViewById(R.id.searchview_query);
 
-        mWebTapButton = (Button)findViewById(R.id.button_web);
-        mImageTapButton = (Button)findViewById(R.id.button_image);
+        mWebTabButton = (RadioButton)findViewById(R.id.button_web);
+        mImageTabButton = (RadioButton)findViewById(R.id.button_image);
 
         SegmentedGroup tabGroup = (SegmentedGroup)findViewById(R.id.container_tab);
         tabGroup.setTintColor(Color.parseColor("#F06292"));
@@ -279,9 +282,11 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
 
                 // TODO : 인터페이스 만들어서 코드 하나로 처리하여 분기문 제거하기. or state pattern
                 if(mIsImageTap == true) {
+                    mImageResponseFragment.clearQueryResult();
                     mQueryHandler.queryImage(query);
                 }
                 else {
+                    mWebResponseFragment.clearQueryResult();
                     mQueryHandler.queryWeb(query);
                 }
 
@@ -305,16 +310,19 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
         mSearchView.setSubmitButtonEnabled(true);
         mSearchView.setQueryRefinementEnabled(true);
 
-        mWebTapButton.setOnClickListener(new View.OnClickListener() {
+        mWebTabButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 final String query = mSearchView.getQuery().toString().trim();
 
                 if(query.isEmpty()) {
+
+                    showWebTap();
                     return;
                 }
 
+                mWebResponseFragment.clearQueryResult();
                 mQueryHandler.queryWeb(query);
 
                 showWebTap();
@@ -322,16 +330,18 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
             }
         });
 
-        mImageTapButton.setOnClickListener(new View.OnClickListener() {
+        mImageTabButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 final String query = mSearchView.getQuery().toString().trim();
 
                 if(query.isEmpty()) {
+
+                    showImageTap();
                     return;
                 }
 
+                mImageResponseFragment.clearQueryResult();
                 mQueryHandler.queryImage(query);
 
                 showImageTap();

@@ -171,6 +171,14 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
     }
 
+    @Override
+    public void clearQueryResult() {
+        if(mAdapter != null) {
+            mAdapter.clearItem();
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
     public abstract RecyclerView.LayoutManager createLayoutManager();
     public abstract ResponseListAdapter createResponseListAdapter();
     public abstract List<T> getResponseList();

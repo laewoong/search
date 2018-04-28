@@ -17,6 +17,7 @@ public interface SearchContract {
         void handleEmptyQueryResult();
         void handleFinalQueryResult();
         void showErrorMessage(String errorMessage);
+        void clearQueryResult();
     }
 
     interface Presenter {
