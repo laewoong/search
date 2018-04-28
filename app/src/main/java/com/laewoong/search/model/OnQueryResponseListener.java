@@ -2,8 +2,6 @@ package com.laewoong.search.model;
 
 import com.laewoong.search.model.response.ErrorCode;
 
-import java.util.List;
-
 /**
  * Created by laewoong on 2018. 4. 21..
  */

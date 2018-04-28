@@ -28,7 +28,7 @@ public class BackPressCloseHandler {
             return;
         }
         if (System.currentTimeMillis() <= backKeyPressedTime + PENDING_TIME) {
-            //activity.moveTaskToBack(true);
+
             mActivity.finish();
             mToast.cancel();
         }

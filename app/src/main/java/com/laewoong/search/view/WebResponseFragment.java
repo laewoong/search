@@ -54,23 +54,15 @@ public class WebResponseFragment extends ResponseFragment<WebInfo> {
             }
         }
 
-        public WebResponseListAdapter() {
-
-        }
-
-        // Create new views (invoked by the layout manager)
         @Override
         public WebResponseListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                                     int viewType) {
-            // create a new view
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_web_response, parent, false);
 
             return new WebResponseListAdapter.ViewHolder(v);
         }
 
-
-        // Replace the contents of a view (invoked by the layout manager)
         @Override
         public void onBindView(ViewHolder holder, int position) {
 

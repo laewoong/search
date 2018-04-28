@@ -54,7 +54,6 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
             mKeyword = query;
         }
 
-        // Return the size of your dataset (invoked by the layout manager)
         @Override
         public int getItemCount() {
 
@@ -65,7 +64,6 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
             return mDataset.size();
         }
 
-        // Replace the contents of a view (invoked by the layout manager)
         @Override
         public void onBindViewHolder(VH holder, final int position) {
 
@@ -108,16 +106,12 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
 
         setRetainInstance(true);
 
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_query_response, container, false);
 
         mRecyclerView = (RecyclerView)view.findViewById(R.id.recyclelistview_search_result);
         mRecyclerView.getRecycledViewPool().setMaxRecycledViews(0, 0);
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
         mRecyclerView.setHasFixedSize(true);
 
-        // use a linear layout manager
         mLayoutManager = createLayoutManager();
         mRecyclerView.setLayoutManager(mLayoutManager);
 

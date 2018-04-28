@@ -134,7 +134,6 @@ public class WebResponsePresenter implements ResponsePresenter {
                             if(mWebResponseFragment.isVisible()) {
                                 mWebResponseFragment.handleFinalQueryResult();
                             }
-
                         }
                     });
                 }

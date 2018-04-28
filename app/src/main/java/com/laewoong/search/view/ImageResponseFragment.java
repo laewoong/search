@@ -24,11 +24,6 @@ import java.util.List;
 
 public class ImageResponseFragment extends ResponseFragment<ImageInfo> implements OnSelectedItemListener {
 
-    //public static final String TAG = ImageResponseFragment.class.getSimpleName();
-
-    //private static final String KEY_ITEM_LIST = "com.laewoong.search.view.ImageResponseFragment.KEY_ITEM_LIST";
-    //private static final String KEY_QUERY = "com.laewoong.search.view.ImageResponseFragment.KEY_QUERY";
-
     public static final String TAG = ImageResponseFragment.class.getSimpleName();
 
     public interface OnSelectedThumbnailListener {
@@ -76,15 +71,11 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
 
     public static class ImageResponseListAdapter extends ResponseFragment.ResponseListAdapter<ImageResponseListAdapter.ViewHolder, ImageInfo>{
 
-
         private Context mContext;
         private OnSelectedItemListener mOnSelectedItemListener;
 
-        // Provide a reference to the views for each data item
-        // Complex data items may need more than one view per item, and
-        // you provide access to all the views for a data item in a view holder
         public static class ViewHolder extends RecyclerView.ViewHolder {
-            // each data item is just a string in this case
+
             public ImageView mThumbnailImageView;
             public TextView mTitleTextView;
 
@@ -102,7 +93,7 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
         public void setOnSelectedItemListener(OnSelectedItemListener listener) {
             mOnSelectedItemListener = listener;
         }
-        // Create new views (invoked by the layout manager)
+
         @Override
         public ImageResponseListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
@@ -149,5 +140,4 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
             });
         }
     }
-
 }

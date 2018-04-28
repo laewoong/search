@@ -48,16 +48,12 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
 
         setRetainInstance(true);
 
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_image_detail, container, false);
 
         mRecyclerView = (RecyclerView)view.findViewById(R.id.recyclelistview_detail_image);
         mRecyclerView.getRecycledViewPool().setMaxRecycledViews(0, 0);
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
         mRecyclerView.setHasFixedSize(true);
 
-        // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
@@ -187,7 +183,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
         private Context mContext;
 
         public static class ViewHolder extends RecyclerView.ViewHolder {
-            // each data item is just a string in this case
+
             public ImageView mDetailImageView;
             public ProgressBar mLoadingProgressbar;
 

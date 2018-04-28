@@ -3,7 +3,6 @@ package com.laewoong.search.presenter;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import com.laewoong.search.R;
 import com.laewoong.search.model.OnQueryResponseListener;
@@ -41,7 +40,6 @@ public class ImageResponsePresenter implements ResponsePresenter, ImageResponseF
         FragmentManager fm = mActivity.get().getSupportFragmentManager();
         mImageResponseFragment = (ImageResponseFragment) fm.findFragmentByTag(ImageResponseFragment.TAG);
 
-        // create the fragment the first time
         if (mImageResponseFragment == null) {
 
             mImageResponseFragment = new ImageResponseFragment();
@@ -96,7 +94,6 @@ public class ImageResponsePresenter implements ResponsePresenter, ImageResponseF
                         }
                     });
                 }
-
             }
 
             @Override
