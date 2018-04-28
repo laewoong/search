@@ -68,6 +68,10 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         @Override
         public void onBindViewHolder(VH holder, final int position) {
 
+            if(position >= mDataset.size()) {
+                throw new ArrayIndexOutOfBoundsException("ResponseListAdapter.onBindView() : invalid position : " + position + " // item size : " + mDataset.size());
+            }
+
             onBindView(holder, position);
 
             if(mIsInfinityScrollActive && (position == getItemCount() - 1)) {
@@ -96,8 +100,6 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
     protected RecyclerView mRecyclerView;
     protected ResponseListAdapter mAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
-
-    public static String TAG = "";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

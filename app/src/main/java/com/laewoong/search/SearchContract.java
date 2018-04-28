@@ -25,7 +25,6 @@ public interface SearchContract {
         String getQuery();
         List<WebInfo> getWebQueryResponseList();
         List<ImageInfo> getImageQueryResponseList();
-        void onSelectedThumbnail(int position);
         void loadMoreQueryResult();
     }
 }

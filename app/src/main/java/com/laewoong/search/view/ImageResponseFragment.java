@@ -24,10 +24,24 @@ import java.util.List;
 
 public class ImageResponseFragment extends ResponseFragment<ImageInfo> implements OnSelectedItemListener {
 
-    public static final String TAG = ImageResponseFragment.class.getSimpleName();
+    //public static final String TAG = ImageResponseFragment.class.getSimpleName();
 
     //private static final String KEY_ITEM_LIST = "com.laewoong.search.view.ImageResponseFragment.KEY_ITEM_LIST";
     //private static final String KEY_QUERY = "com.laewoong.search.view.ImageResponseFragment.KEY_QUERY";
+
+    public static final String TAG = ImageResponseFragment.class.getSimpleName();
+
+    public interface OnSelectedThumbnailListener {
+
+        void onSelectedThumbnail(int position);
+    }
+
+    private OnSelectedThumbnailListener mOnSelectedThumbnailListener;
+
+
+    public ImageResponseFragment() {
+
+    }
 
     @Override
     public RecyclerView.LayoutManager createLayoutManager() {
@@ -49,7 +63,15 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
 
     @Override
     public void onSelectedItem(int position) {
-        mPresenter.onSelectedThumbnail(position);
+
+        if(mOnSelectedThumbnailListener != null) {
+
+            mOnSelectedThumbnailListener.onSelectedThumbnail(position);
+        }
+    }
+
+    public void setOnSelectedThumbnailListener(OnSelectedThumbnailListener listener) {
+        mOnSelectedThumbnailListener = listener;
     }
 
     public static class ImageResponseListAdapter extends ResponseFragment.ResponseListAdapter<ImageResponseListAdapter.ViewHolder, ImageInfo>{

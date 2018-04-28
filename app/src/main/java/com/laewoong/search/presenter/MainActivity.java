@@ -7,26 +7,21 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.RadioButton;
 
-import com.laewoong.search.model.OnQueryResponseListener;
 import com.laewoong.search.R;
 import com.laewoong.search.SearchContract;
-import com.laewoong.search.model.response.ErrorCode;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.model.QueryHandler;
 import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.util.BackPressCloseHandler;
 import com.laewoong.search.view.DetailImageFragment;
-import com.laewoong.search.view.ImageResponseFragment;
-import com.laewoong.search.view.ResponseFragment;
-import com.laewoong.search.view.WebResponseFragment;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import info.hoang8f.android.segmented.SegmentedGroup;
 
@@ -34,240 +29,55 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
-    public static final String KEY_IS_IMAGE_TAP = "com.laewoong.search.presenter.MainActivity.KEY_IS_IMAGE_TAP";
+    public static final String KEY_LATEST_TAG = "com.laewoong.search.presenter.MainActivity.KEY_LATEST_TAG";
 
-    private QueryHandler mQueryHandler;
-
-    private View mRootView;
-    private View mFragmentContainer;
-
-    private SearchView mSearchView;
-
+    private SearchView  mSearchView;
     private RadioButton mWebTabButton;
     private RadioButton mImageTabButton;
 
-    private ResponseFragment mWebResponseFragment;
-    private ResponseFragment   mImageResponseFragment;
-    private DetailImageFragment     mDetailImageFragment;
-
+    private QueryHandler mQueryHandler;
     private BackPressCloseHandler mBackPressCloseHandler;
 
-    private boolean mIsImageTap;
+    private Map<String, ResponsePresenter> mResponseControllerMap;
 
-    private OnQueryResponseListener mWebQueryResponseListener;
-    private OnQueryResponseListener mImageQueryResponseListener;
+    private String CURRENT_RESPONSE_PRESENTER_TAG;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mQueryHandler = ((SearchApplication)getApplication()).getQueryHandler();
-
-        mRootView = findViewById(R.id.container_root);
-        mFragmentContainer = findViewById(R.id.container_fragment);
-
         mSearchView = (SearchView)findViewById(R.id.searchview_query);
 
         mWebTabButton = (RadioButton)findViewById(R.id.button_web);
         mImageTabButton = (RadioButton)findViewById(R.id.button_image);
 
-        SegmentedGroup tabGroup = (SegmentedGroup)findViewById(R.id.container_tab);
-        tabGroup.setTintColor(Color.parseColor("#F06292"));
+        mQueryHandler = ((SearchApplication)getApplication()).getQueryHandler();
+        mBackPressCloseHandler = new BackPressCloseHandler(this);
+
+        mResponseControllerMap = new HashMap<String, ResponsePresenter>(2);
+        mResponseControllerMap.put(WebResponsePresenter.TAG, new WebResponsePresenter(this, mQueryHandler, R.id.container_fragment));
+        mResponseControllerMap.put(ImageResponsePresenter.TAG, new ImageResponsePresenter(this, mQueryHandler, R.id.container_fragment, R.id.container_root));
 
         init();
 
-        mIsImageTap = false;
+        // 처음 Activity가 생성된 것이 아니라면 가장 최근 탭으로 복구
+        if((savedInstanceState != null) && savedInstanceState.containsKey(KEY_LATEST_TAG)) {
 
-        if(savedInstanceState != null) {
-
-            mIsImageTap = savedInstanceState.getBoolean(KEY_IS_IMAGE_TAP);
-        }
-
-        if(mIsImageTap == true) {
-            showImageTap();
+            CURRENT_RESPONSE_PRESENTER_TAG = savedInstanceState.getString(KEY_LATEST_TAG);
         }
         else {
-            showWebTap();
+
+            CURRENT_RESPONSE_PRESENTER_TAG = WebResponsePresenter.TAG;
         }
+
+        mResponseControllerMap.get(CURRENT_RESPONSE_PRESENTER_TAG).show();
     }
 
 
     private void init() {
 
-        // find the retained fragment on activity restarts
-        FragmentManager fm = getSupportFragmentManager();
-
-        mWebResponseFragment = (WebResponseFragment) fm.findFragmentByTag(WebResponseFragment.TAG);
-
-        // create the fragment the first time
-        if (mWebResponseFragment == null) {
-
-            mWebResponseFragment = new WebResponseFragment();
-        }
-
-        mImageResponseFragment = (ImageResponseFragment) fm.findFragmentByTag(ImageResponseFragment.TAG);
-
-        // create the fragment the first time
-        if (mImageResponseFragment == null) {
-
-            mImageResponseFragment = new ImageResponseFragment();
-        }
-
-        mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
-
-        mWebQueryResponseListener = new OnQueryResponseListener() {
-
-            @Override
-            public void onFailNetwork() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        final String errorMessage = getString(R.string.guide_check_network_state);
-                        mWebResponseFragment.showErrorMessage(errorMessage);
-                    }
-                });
-            }
-
-            @Override
-            public void onSuccessResponse() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mWebResponseFragment.updateQueryResult();
-                    }
-                });
-            }
-
-            @Override
-            public void onErrorQueryResponse(final ErrorCode errorCode) {
-
-                // TODO : send info to server
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        final String errorMessage = (errorCode == ErrorCode.NAVER_MAX_START_VALUE_POLICY) ? getString(R.string.guide_naver_max_start_value_policy) : getApplicationContext().getString(R.string.guide_internal_error);
-
-                        mWebResponseFragment.showErrorMessage(errorMessage);
-                    }
-                });
-            }
-
-            @Override
-            public void onEmptyResponse() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mWebResponseFragment.handleEmptyQueryResult();
-                    }
-                });
-            }
-
-            @Override
-            public void onFinalResponse() {
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(mWebResponseFragment != null) {
-                            mWebResponseFragment.handleFinalQueryResult();
-                        }
-                    }
-                });
-            }
-        };
-
-        mImageQueryResponseListener = new OnQueryResponseListener() {
-
-            @Override
-            public void onFailNetwork() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        final String errorMessage = getString(R.string.guide_check_network_state);
-                        if(mImageResponseFragment.isVisible()) {
-                            mImageResponseFragment.showErrorMessage(errorMessage);
-                        }
-
-                        if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
-                            mDetailImageFragment.showErrorMessage(errorMessage);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onSuccessResponse() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        if(mImageResponseFragment.isVisible()) {
-                            mImageResponseFragment.updateQueryResult();
-                        }
-
-                        if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
-                            mDetailImageFragment.updateQueryResult();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onErrorQueryResponse(final ErrorCode errorCode) {
-
-                // TODO : send info to server
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        final String errorMessage = (errorCode == ErrorCode.NAVER_MAX_START_VALUE_POLICY) ? getString(R.string.guide_naver_max_start_value_policy) : getApplicationContext().getString(R.string.guide_internal_error);
-
-                        if(mImageResponseFragment.isVisible()) {
-                            mImageResponseFragment.showErrorMessage(errorMessage);
-                        }
-
-                        if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
-                            mDetailImageFragment.showErrorMessage(errorMessage);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onEmptyResponse() {
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        mImageResponseFragment.handleEmptyQueryResult();
-                    }
-                });
-            }
-
-            @Override
-            public void onFinalResponse() {
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(mImageResponseFragment.isVisible()) {
-                            mImageResponseFragment.handleFinalQueryResult();
-                        }
-
-                        if((mDetailImageFragment != null) && (mDetailImageFragment.isVisible())) {
-                            mDetailImageFragment.handleFinalQueryResult();
-                        }
-                    }
-                });
-            }
-        };
-
+        // Init SearchView
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -280,15 +90,7 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
 
                 mSearchView.clearFocus();
 
-                // TODO : 인터페이스 만들어서 코드 하나로 처리하여 분기문 제거하기. or state pattern
-                if(mIsImageTap == true) {
-                    mImageResponseFragment.clearQueryResult();
-                    mQueryHandler.queryImage(query);
-                }
-                else {
-                    mWebResponseFragment.clearQueryResult();
-                    mQueryHandler.queryWeb(query);
-                }
+                mResponseControllerMap.get(CURRENT_RESPONSE_PRESENTER_TAG).query(query);
 
                 return false;
             }
@@ -299,16 +101,12 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
             }
         });
 
-
-        // Get the SearchView and set the searchable configuration
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-
-        // Assumes current activity is the searchable activity
         mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        mSearchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
-
+        mSearchView.setIconifiedByDefault(false);
         mSearchView.setSubmitButtonEnabled(true);
         mSearchView.setQueryRefinementEnabled(true);
+
 
         mWebTabButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -316,16 +114,16 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
 
                 final String query = mSearchView.getQuery().toString().trim();
 
+                CURRENT_RESPONSE_PRESENTER_TAG = WebResponsePresenter.TAG;
+                ResponsePresenter presenter = mResponseControllerMap.get(CURRENT_RESPONSE_PRESENTER_TAG);
+                presenter.show();
+
                 if(query.isEmpty()) {
 
-                    showWebTap();
                     return;
                 }
 
-                mWebResponseFragment.clearQueryResult();
-                mQueryHandler.queryWeb(query);
-
-                showWebTap();
+                presenter.query(query);
                 mSearchView.clearFocus();
             }
         });
@@ -333,23 +131,26 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
         mImageTabButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 final String query = mSearchView.getQuery().toString().trim();
+
+                CURRENT_RESPONSE_PRESENTER_TAG = ImageResponsePresenter.TAG;
+                ResponsePresenter presenter = mResponseControllerMap.get(CURRENT_RESPONSE_PRESENTER_TAG);
+                presenter.show();
 
                 if(query.isEmpty()) {
 
-                    showImageTap();
                     return;
                 }
 
-                mImageResponseFragment.clearQueryResult();
-                mQueryHandler.queryImage(query);
-
-                showImageTap();
+                presenter.query(query);
                 mSearchView.clearFocus();
             }
         });
 
-        mBackPressCloseHandler = new BackPressCloseHandler(this);
+        // Init tab view's hint color
+        SegmentedGroup tabGroup = (SegmentedGroup)findViewById(R.id.container_tab);
+        tabGroup.setTintColor(Color.parseColor("#F06292"));
     }
 
     @Override
@@ -364,33 +165,23 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
     @Override
     protected void onSaveInstanceState (Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(KEY_IS_IMAGE_TAP, mIsImageTap);
+
+        // Save current tab info to restore when activity restart.
+        outState.putString(KEY_LATEST_TAG, CURRENT_RESPONSE_PRESENTER_TAG);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        mQueryHandler.addWebQueryResultListener(mWebQueryResponseListener);
-        mQueryHandler.addImageQueryResultListener(mImageQueryResponseListener);
+        mQueryHandler.addWebQueryResultListener(mResponseControllerMap.get(WebResponsePresenter.TAG).getOnQueryResponseListener());
+        mQueryHandler.addImageQueryResultListener(mResponseControllerMap.get(ImageResponsePresenter.TAG).getOnQueryResponseListener());
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mQueryHandler.removeWebQueryResultListener(mWebQueryResponseListener);
-        mQueryHandler.removeImageQueryResultListener(mImageQueryResponseListener);
-    }
-
-    private void showWebTap() {
-
-        mIsImageTap = false;
-        getSupportFragmentManager().beginTransaction().replace(mFragmentContainer.getId(), mWebResponseFragment, WebResponseFragment.TAG).commit();
-    }
-
-    private void showImageTap() {
-
-        mIsImageTap = true;
-        getSupportFragmentManager().beginTransaction().replace(mFragmentContainer.getId(), mImageResponseFragment, ImageResponseFragment.TAG).commit();
+        mQueryHandler.removeWebQueryResultListener(mResponseControllerMap.get(WebResponsePresenter.TAG).getOnQueryResponseListener());
+        mQueryHandler.removeImageQueryResultListener(mResponseControllerMap.get(ImageResponsePresenter.TAG).getOnQueryResponseListener());
     }
 
     @Override
@@ -411,33 +202,8 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
     }
 
     @Override
-    public void onSelectedThumbnail(int position) {
-
-        FragmentManager fm = getSupportFragmentManager();
-        mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
-
-        // create the fragment the first time
-        if (mDetailImageFragment == null) {
-
-            mDetailImageFragment = new DetailImageFragment();
-        }
-
-        Bundle args = new Bundle();
-        args.putInt(DetailImageFragment.KEY_POSITION, position);
-        mDetailImageFragment.setArguments(args);
-
-        fm.beginTransaction().add(mRootView.getId(), mDetailImageFragment, DetailImageFragment.TAG).addToBackStack(null).commit();
-    }
-
-    @Override
     public void loadMoreQueryResult() {
 
-        // TODO : 인터페이스 만들어서 코드 하나로 처리하여 분기문 제거하기.
-        if(mIsImageTap == true) {
-            mQueryHandler.queryImageMore();
-        }
-        else {
-            mQueryHandler.queryWebMore();
-        }
+        mResponseControllerMap.get(CURRENT_RESPONSE_PRESENTER_TAG).queryMore();
     }
 }

@@ -217,11 +217,12 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
 
         @Override
         public void onBindView(final ViewHolder holder, int position) {
-            final ImageInfo info = mDataset.get(position);
-            if(info == null) {
-                //TODO throw exception
-                return;
+
+            if(position >= mDataset.size()) {
+                throw new ArrayIndexOutOfBoundsException("DetailImageListAdapter.onBindView() : invalid position : " + position + " // item size : " + mDataset.size());
             }
+
+            final ImageInfo info = mDataset.get(position);
 
             String url = info.getLink();
 

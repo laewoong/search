@@ -20,12 +20,7 @@ import java.util.List;
 
 public class WebResponseFragment extends ResponseFragment<WebInfo> {
 
-//    private static final String KEY_ITEM_LIST = "com.laewoong.search.view.WebResponseFragment.KEY_ITEM_LIST";
-//    private static final String KEY_QUERY = "com.laewoong.search.view.WebResponseFragment.KEY_QUERY";
-
-    public WebResponseFragment() {
-        TAG = WebResponseFragment.class.getSimpleName();
-    }
+    public static final String TAG = WebResponseFragment.class.getSimpleName();
 
     @Override
     public RecyclerView.LayoutManager createLayoutManager() {
