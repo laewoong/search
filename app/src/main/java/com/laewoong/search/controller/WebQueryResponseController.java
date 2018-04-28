@@ -1,4 +1,4 @@
-package com.laewoong.search.presenter;
+package com.laewoong.search.controller;
 
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -15,9 +15,9 @@ import java.lang.ref.WeakReference;
  * Created by laewoong on 2018. 4. 28..
  */
 
-public class WebResponsePresenter implements ResponsePresenter {
+public class WebQueryResponseController implements QueryResponseController {
 
-    public static final String TAG  = WebResponsePresenter.class.getSimpleName();
+    public static final String TAG  = WebQueryResponseController.class.getSimpleName();
 
     private WeakReference<AppCompatActivity> mActivity;
     private QueryHandler mQueryHandler;
@@ -26,7 +26,7 @@ public class WebResponsePresenter implements ResponsePresenter {
     private WebResponseFragment mWebResponseFragment;
     private OnQueryResponseListener mOnQueryResponseListener;
 
-    public WebResponsePresenter(AppCompatActivity activity, QueryHandler queryHandler, int containerId) {
+    public WebQueryResponseController(AppCompatActivity activity, QueryHandler queryHandler, int containerId) {
 
         mActivity = new WeakReference<AppCompatActivity>(activity);
         mQueryHandler = queryHandler;

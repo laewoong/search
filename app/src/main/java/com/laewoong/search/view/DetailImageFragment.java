@@ -14,7 +14,6 @@ import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.bogdwellers.pinchtozoom.ImageMatrixTouchHandler;
 import com.laewoong.search.model.response.ImageInfo;
@@ -98,14 +97,14 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
         super.onActivityCreated(savedInstanceState);
 
         try{
-            mPresenter = (SearchContract.Presenter)getActivity();
-            mAdapter.setPresenter(mPresenter);
+            mController = (SearchContract.Controller)getActivity();
+            mAdapter.setController(mController);
         } catch (ClassCastException e) {
-            throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Presenter");
+            throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Controller");
         }
 
-        mAdapter.setQuery(mPresenter.getQuery());
-        mAdapter.setItem(mPresenter.getImageQueryResponseList());
+        mAdapter.setQuery(mController.getQuery());
+        mAdapter.setItem(mController.getImageQueryResponseList());
 
         mRecyclerView.scrollToPosition(mPosition);
 
@@ -154,7 +153,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
 
     @Override
     public List<ImageInfo> getResponseList() {
-        return mPresenter.getImageQueryResponseList();
+        return mController.getImageQueryResponseList();
     }
 
     private void setButtonVisibleState() {

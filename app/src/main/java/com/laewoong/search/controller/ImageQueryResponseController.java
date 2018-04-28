@@ -1,4 +1,4 @@
-package com.laewoong.search.presenter;
+package com.laewoong.search.controller;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -17,9 +17,9 @@ import java.lang.ref.WeakReference;
  * Created by laewoong on 2018. 4. 28..
  */
 
-public class ImageResponsePresenter implements ResponsePresenter, ImageResponseFragment.OnSelectedThumbnailListener {
+public class ImageQueryResponseController implements QueryResponseController, ImageResponseFragment.OnSelectedThumbnailListener {
 
-    public static final String TAG  = ImageResponsePresenter.class.getSimpleName();
+    public static final String TAG  = ImageQueryResponseController.class.getSimpleName();
 
     private WeakReference<AppCompatActivity> mActivity;
     private QueryHandler mQueryHandler;
@@ -30,7 +30,7 @@ public class ImageResponsePresenter implements ResponsePresenter, ImageResponseF
     private DetailImageFragment mDetailImageFragment;
     private OnQueryResponseListener mImageQueryResponseListener;
 
-    public ImageResponsePresenter(AppCompatActivity activity, QueryHandler queryHandler, int containerId, int detailImageContainerId) {
+    public ImageQueryResponseController(AppCompatActivity activity, QueryHandler queryHandler, int containerId, int detailImageContainerId) {
 
         mActivity = new WeakReference<AppCompatActivity>(activity);
         mQueryHandler = queryHandler;

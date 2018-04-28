@@ -14,11 +14,11 @@ public class ImageQueryTask extends QueryTask<QueryResponseImage, ImageInfo> {
 
     public static final String TAG = ImageQueryTask.class.getSimpleName();
 
-    public ImageQueryTask(NaverOpenAPIService service,String query, OnQueryTaskResultListener<ImageInfo> listener) {
+    public ImageQueryTask(NaverOpenAPIService service,String query, OnQueryTaskResponseListener<ImageInfo> listener) {
         this(service, query, 1, listener);
     }
 
-    public ImageQueryTask(NaverOpenAPIService service, String query, int start, OnQueryTaskResultListener<ImageInfo> listener) {
+    public ImageQueryTask(NaverOpenAPIService service, String query, int start, OnQueryTaskResponseListener<ImageInfo> listener) {
         super(service, query, start, listener);
     }
 

@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.R;
@@ -33,11 +32,6 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
 
     private OnSelectedThumbnailListener mOnSelectedThumbnailListener;
 
-
-    public ImageResponseFragment() {
-
-    }
-
     @Override
     public RecyclerView.LayoutManager createLayoutManager() {
         return new GridLayoutManager(getContext().getApplicationContext(), ViewConstants.DEFAULT_GRID_SPAN_COUNT);
@@ -53,7 +47,7 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
 
     @Override
     public List<ImageInfo> getResponseList() {
-        return mPresenter.getImageQueryResponseList();
+        return mController.getImageQueryResponseList();
     }
 
     @Override

@@ -15,11 +15,11 @@ public class WebQueryTask extends QueryTask<QueryResponseWeb, WebInfo> {
 
     public static final String TAG = WebQueryTask.class.getSimpleName();
 
-    public WebQueryTask(NaverOpenAPIService service, String query, OnQueryTaskResultListener<WebInfo> listener) {
+    public WebQueryTask(NaverOpenAPIService service, String query, OnQueryTaskResponseListener<WebInfo> listener) {
         this(service, query, 1, listener);
     }
 
-    public WebQueryTask(NaverOpenAPIService service, String query, int start, OnQueryTaskResultListener<WebInfo> listener) {
+    public WebQueryTask(NaverOpenAPIService service, String query, int start, OnQueryTaskResponseListener<WebInfo> listener) {
         super(service, query, start, listener);
     }
 

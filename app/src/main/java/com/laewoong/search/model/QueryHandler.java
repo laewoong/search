@@ -24,8 +24,8 @@ public class QueryHandler {
     private List<WebInfo>   mWebInfoList;
     private List<ImageInfo> mImageInfoList;
 
-    private List<OnQueryResponseListener> mWebQueryResultListenerList;
-    private List<OnQueryResponseListener> mImageQueryResultListenerList;
+    private List<OnQueryResponseListener> mWebQueryResponseClientListenerList;
+    private List<OnQueryResponseListener> mImageQueryResponseClientListenerList;
 
     private final ExecutorService mExecutorService;
 
@@ -36,15 +36,15 @@ public class QueryHandler {
 
     private String mQuery;
 
-    private QueryTask.OnQueryTaskResultListener<WebInfo> mWebQueryResponseListener;
-    private QueryTask.OnQueryTaskResultListener<ImageInfo> mImageQueryResponseListener;
+    private QueryTask.OnQueryTaskResponseListener<WebInfo> mWebQueryTaskResponseListener;
+    private QueryTask.OnQueryTaskResponseListener<ImageInfo> mImageQueryTaskResponseListener;
 
     public QueryHandler() {
         mWebInfoList    = new LinkedList<WebInfo>();
         mImageInfoList  = new LinkedList<ImageInfo>();
 
-        mWebQueryResultListenerList = new LinkedList<OnQueryResponseListener>();
-        mImageQueryResultListenerList = new LinkedList<OnQueryResponseListener>();
+        mWebQueryResponseClientListenerList = new LinkedList<OnQueryResponseListener>();
+        mImageQueryResponseClientListenerList = new LinkedList<OnQueryResponseListener>();
 
         mExecutorService = Executors.newCachedThreadPool(new LowPriorityThreadFactory());
 
@@ -55,15 +55,15 @@ public class QueryHandler {
 
     private void init() {
 
-        mWebQueryResponseListener = new QueryTask.OnQueryTaskResultListener<WebInfo>() {
+        mWebQueryTaskResponseListener = new QueryTask.OnQueryTaskResponseListener<WebInfo>() {
             @Override
             public void onFailNetwork() {
 
-                if(mWebQueryResultListenerList.isEmpty()) {
+                if(mWebQueryResponseClientListenerList.isEmpty()) {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mWebQueryResultListenerList) {
+                for(OnQueryResponseListener listener : mWebQueryResponseClientListenerList) {
                     listener.onFailNetwork();
                 }
             }
@@ -73,11 +73,11 @@ public class QueryHandler {
 
                 mWebInfoList.addAll(infoList);
 
-                if(mWebQueryResultListenerList.isEmpty()) {
+                if(mWebQueryResponseClientListenerList.isEmpty()) {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mWebQueryResultListenerList) {
+                for(OnQueryResponseListener listener : mWebQueryResponseClientListenerList) {
                     listener.onSuccessResponse();
                 }
             }
@@ -85,11 +85,11 @@ public class QueryHandler {
             @Override
             public void onErrorQueryResponse(ErrorCode errorCode) {
 
-                if(mWebQueryResultListenerList.isEmpty()) {
+                if(mWebQueryResponseClientListenerList.isEmpty()) {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mWebQueryResultListenerList) {
+                for(OnQueryResponseListener listener : mWebQueryResponseClientListenerList) {
 
                     listener.onErrorQueryResponse(errorCode);
                 }
@@ -97,11 +97,11 @@ public class QueryHandler {
 
             @Override
             public void onEmptyQueryResponse() {
-                if(mWebQueryResultListenerList.isEmpty()) {
+                if(mWebQueryResponseClientListenerList.isEmpty()) {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mWebQueryResultListenerList) {
+                for(OnQueryResponseListener listener : mWebQueryResponseClientListenerList) {
 
                     listener.onEmptyResponse();
                 }
@@ -110,25 +110,25 @@ public class QueryHandler {
             @Override
             public void onFinalQueryResponse() {
 
-                if(mWebQueryResultListenerList.isEmpty()) {
+                if(mWebQueryResponseClientListenerList.isEmpty()) {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mWebQueryResultListenerList) {
+                for(OnQueryResponseListener listener : mWebQueryResponseClientListenerList) {
                     listener.onFinalResponse();
                 }
             }
         };
 
-        mImageQueryResponseListener = new QueryTask.OnQueryTaskResultListener<ImageInfo>() {
+        mImageQueryTaskResponseListener = new QueryTask.OnQueryTaskResponseListener<ImageInfo>() {
             @Override
             public void onFailNetwork() {
 
-                if(mImageQueryResultListenerList.isEmpty()) {
+                if(mImageQueryResponseClientListenerList.isEmpty()) {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mImageQueryResultListenerList) {
+                for(OnQueryResponseListener listener : mImageQueryResponseClientListenerList) {
                     listener.onFailNetwork();
                 }
             }
@@ -138,11 +138,11 @@ public class QueryHandler {
 
                 mImageInfoList.addAll(infoList);
 
-                if(mImageQueryResultListenerList.isEmpty()) {
+                if(mImageQueryResponseClientListenerList.isEmpty()) {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mImageQueryResultListenerList) {
+                for(OnQueryResponseListener listener : mImageQueryResponseClientListenerList) {
                     listener.onSuccessResponse();
                 }
             }
@@ -150,11 +150,11 @@ public class QueryHandler {
             @Override
             public void onErrorQueryResponse(ErrorCode errorCode) {
 
-                if(mImageQueryResultListenerList.isEmpty()) {
+                if(mImageQueryResponseClientListenerList.isEmpty()) {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mImageQueryResultListenerList) {
+                for(OnQueryResponseListener listener : mImageQueryResponseClientListenerList) {
 
                     listener.onErrorQueryResponse(errorCode);
                 }
@@ -163,11 +163,11 @@ public class QueryHandler {
             @Override
             public void onEmptyQueryResponse() {
 
-                if(mImageQueryResultListenerList.isEmpty()) {
+                if(mImageQueryResponseClientListenerList.isEmpty()) {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mImageQueryResultListenerList) {
+                for(OnQueryResponseListener listener : mImageQueryResponseClientListenerList) {
 
                     listener.onEmptyResponse();
                 }
@@ -176,11 +176,11 @@ public class QueryHandler {
             @Override
             public void onFinalQueryResponse() {
 
-                if(mImageQueryResultListenerList.isEmpty()) {
+                if(mImageQueryResponseClientListenerList.isEmpty()) {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mImageQueryResultListenerList) {
+                for(OnQueryResponseListener listener : mImageQueryResponseClientListenerList) {
                     listener.onFinalResponse();
                 }
             }
@@ -190,21 +190,28 @@ public class QueryHandler {
     public void release() {
 
         mExecutorService.shutdownNow();
+
+        mWebInfoList.clear();
+        mImageInfoList.clear();
+
+        mWebQueryResponseClientListenerList.clear();
+        mImageQueryResponseClientListenerList.clear();
     }
+
     public void addWebQueryResultListener(OnQueryResponseListener listener) {
-        mWebQueryResultListenerList.add(listener);
+        mWebQueryResponseClientListenerList.add(listener);
     }
 
     public boolean removeWebQueryResultListener(OnQueryResponseListener listener) {
-        return mWebQueryResultListenerList.remove(listener);
+        return mWebQueryResponseClientListenerList.remove(listener);
     }
 
     public void addImageQueryResultListener(OnQueryResponseListener listener) {
-        mImageQueryResultListenerList.add(listener);
+        mImageQueryResponseClientListenerList.add(listener);
     }
 
     public boolean removeImageQueryResultListener(OnQueryResponseListener listener) {
-        return mImageQueryResultListenerList.remove(listener);
+        return mImageQueryResponseClientListenerList.remove(listener);
     }
 
     public List<WebInfo> getWebInfoList() {
@@ -225,15 +232,16 @@ public class QueryHandler {
 
         mWebInfoList.clear();
 
+        // 다른 탭에서 웹 탭으로 넘어온 경우 기존 탭 요청은 무효하므로 취소.
         if(mImageQueryTask != null) {
-            mImageQueryTask.cancle();
+            mImageQueryTask.cancel();
         }
 
         if(mWebQueryTask != null) {
-            mWebQueryTask.cancle();
+            mWebQueryTask.cancel();
         }
 
-        mWebQueryTask = new WebQueryTask(mService, query, mWebQueryResponseListener);
+        mWebQueryTask = new WebQueryTask(mService, query, mWebQueryTaskResponseListener);
         mExecutorService.execute(mWebQueryTask);
     }
 
@@ -249,15 +257,16 @@ public class QueryHandler {
 
         mImageInfoList.clear();
 
+        // 다른 탭에서 이미지 탭으로 넘어온 경우 기존 탭 요청은 무효하므로 취소.
         if(mWebQueryTask != null) {
-            mWebQueryTask.cancle();
+            mWebQueryTask.cancel();
         }
 
         if(mImageQueryTask != null) {
-            mImageQueryTask.cancle();
+            mImageQueryTask.cancel();
         }
 
-        mImageQueryTask = new ImageQueryTask(mService, query, mImageQueryResponseListener);
+        mImageQueryTask = new ImageQueryTask(mService, query, mImageQueryTaskResponseListener);
 
         mExecutorService.execute(mImageQueryTask);
     }

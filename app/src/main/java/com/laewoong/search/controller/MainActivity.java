@@ -1,9 +1,8 @@
-package com.laewoong.search.presenter;
+package com.laewoong.search.controller;
 
 import android.app.SearchManager;
 import android.content.Context;
 import android.graphics.Color;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
@@ -16,7 +15,6 @@ import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.model.QueryHandler;
 import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.util.BackPressCloseHandler;
-import com.laewoong.search.view.DetailImageFragment;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -25,11 +23,11 @@ import java.util.Map;
 
 import info.hoang8f.android.segmented.SegmentedGroup;
 
-public class MainActivity extends AppCompatActivity implements SearchContract.Presenter {
+public class MainActivity extends AppCompatActivity implements SearchContract.Controller {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
-    public static final String KEY_LATEST_TAG = "com.laewoong.search.presenter.MainActivity.KEY_LATEST_TAG";
+    public static final String KEY_LATEST_TAG = "com.laewoong.search.controller.MainActivity.KEY_LATEST_TAG";
 
     private SearchView  mSearchView;
     private RadioButton mWebTabButton;
@@ -38,9 +36,9 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
     private QueryHandler mQueryHandler;
     private BackPressCloseHandler mBackPressCloseHandler;
 
-    private Map<String, ResponsePresenter> mResponseControllerMap;
+    private Map<String, QueryResponseController> mResponseControllerMap;
 
-    private String CURRENT_RESPONSE_PRESENTER_TAG;
+    private String CURRENT_RESPONSE_CONTROLLER_TAG;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,23 +53,23 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
         mQueryHandler = ((SearchApplication)getApplication()).getQueryHandler();
         mBackPressCloseHandler = new BackPressCloseHandler(this);
 
-        mResponseControllerMap = new HashMap<String, ResponsePresenter>(2);
-        mResponseControllerMap.put(WebResponsePresenter.TAG, new WebResponsePresenter(this, mQueryHandler, R.id.container_fragment));
-        mResponseControllerMap.put(ImageResponsePresenter.TAG, new ImageResponsePresenter(this, mQueryHandler, R.id.container_fragment, R.id.container_root));
+        mResponseControllerMap = new HashMap<String, QueryResponseController>(2);
+        mResponseControllerMap.put(WebQueryResponseController.TAG, new WebQueryResponseController(this, mQueryHandler, R.id.container_fragment));
+        mResponseControllerMap.put(ImageQueryResponseController.TAG, new ImageQueryResponseController(this, mQueryHandler, R.id.container_fragment, R.id.container_root));
 
         init();
 
         // 처음 Activity가 생성된 것이 아니라면 가장 최근 탭으로 복구
         if((savedInstanceState != null) && savedInstanceState.containsKey(KEY_LATEST_TAG)) {
 
-            CURRENT_RESPONSE_PRESENTER_TAG = savedInstanceState.getString(KEY_LATEST_TAG);
+            CURRENT_RESPONSE_CONTROLLER_TAG = savedInstanceState.getString(KEY_LATEST_TAG);
         }
         else {
 
-            CURRENT_RESPONSE_PRESENTER_TAG = WebResponsePresenter.TAG;
+            CURRENT_RESPONSE_CONTROLLER_TAG = WebQueryResponseController.TAG;
         }
 
-        mResponseControllerMap.get(CURRENT_RESPONSE_PRESENTER_TAG).show();
+        mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG).show();
     }
 
 
@@ -90,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
 
                 mSearchView.clearFocus();
 
-                mResponseControllerMap.get(CURRENT_RESPONSE_PRESENTER_TAG).query(query);
+                mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG).query(query);
 
                 return false;
             }
@@ -114,16 +112,16 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
 
                 final String query = mSearchView.getQuery().toString().trim();
 
-                CURRENT_RESPONSE_PRESENTER_TAG = WebResponsePresenter.TAG;
-                ResponsePresenter presenter = mResponseControllerMap.get(CURRENT_RESPONSE_PRESENTER_TAG);
-                presenter.show();
+                CURRENT_RESPONSE_CONTROLLER_TAG = WebQueryResponseController.TAG;
+                QueryResponseController controller = mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG);
+                controller.show();
 
                 if(query.isEmpty()) {
 
                     return;
                 }
 
-                presenter.query(query);
+                controller.query(query);
                 mSearchView.clearFocus();
             }
         });
@@ -134,16 +132,16 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
 
                 final String query = mSearchView.getQuery().toString().trim();
 
-                CURRENT_RESPONSE_PRESENTER_TAG = ImageResponsePresenter.TAG;
-                ResponsePresenter presenter = mResponseControllerMap.get(CURRENT_RESPONSE_PRESENTER_TAG);
-                presenter.show();
+                CURRENT_RESPONSE_CONTROLLER_TAG = ImageQueryResponseController.TAG;
+                QueryResponseController controller = mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG);
+                controller.show();
 
                 if(query.isEmpty()) {
 
                     return;
                 }
 
-                presenter.query(query);
+                controller.query(query);
                 mSearchView.clearFocus();
             }
         });
@@ -167,21 +165,21 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
         super.onSaveInstanceState(outState);
 
         // Save current tab info to restore when activity restart.
-        outState.putString(KEY_LATEST_TAG, CURRENT_RESPONSE_PRESENTER_TAG);
+        outState.putString(KEY_LATEST_TAG, CURRENT_RESPONSE_CONTROLLER_TAG);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        mQueryHandler.addWebQueryResultListener(mResponseControllerMap.get(WebResponsePresenter.TAG).getOnQueryResponseListener());
-        mQueryHandler.addImageQueryResultListener(mResponseControllerMap.get(ImageResponsePresenter.TAG).getOnQueryResponseListener());
+        mQueryHandler.addWebQueryResultListener(mResponseControllerMap.get(WebQueryResponseController.TAG).getOnQueryResponseListener());
+        mQueryHandler.addImageQueryResultListener(mResponseControllerMap.get(ImageQueryResponseController.TAG).getOnQueryResponseListener());
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mQueryHandler.removeWebQueryResultListener(mResponseControllerMap.get(WebResponsePresenter.TAG).getOnQueryResponseListener());
-        mQueryHandler.removeImageQueryResultListener(mResponseControllerMap.get(ImageResponsePresenter.TAG).getOnQueryResponseListener());
+        mQueryHandler.removeWebQueryResultListener(mResponseControllerMap.get(WebQueryResponseController.TAG).getOnQueryResponseListener());
+        mQueryHandler.removeImageQueryResultListener(mResponseControllerMap.get(ImageQueryResponseController.TAG).getOnQueryResponseListener());
     }
 
     @Override
@@ -204,6 +202,6 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Pr
     @Override
     public void loadMoreQueryResult() {
 
-        mResponseControllerMap.get(CURRENT_RESPONSE_PRESENTER_TAG).queryMore();
+        mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG).queryMore();
     }
 }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.laewoong.search.presenter.MainActivity">
+    tools:context="com.laewoong.search.controller.MainActivity">
 
     <ProgressBar
         android:id="@+id/progressbar_original_image_loading"

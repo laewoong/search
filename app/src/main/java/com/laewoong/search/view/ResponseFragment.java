@@ -9,7 +9,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.laewoong.search.R;
 import com.laewoong.search.SearchContract;
@@ -31,7 +30,7 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         protected Handler mUiHandler;
         protected boolean mIsInfinityScrollActive;
 
-        protected WeakReference<SearchContract.Presenter> mPresenter;;
+        protected WeakReference<SearchContract.Controller> mController;;
 
         public ResponseListAdapter() {
 
@@ -39,8 +38,8 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
             mIsInfinityScrollActive = true;
         }
 
-        public void setPresenter(SearchContract.Presenter presenter) {
-            mPresenter = new WeakReference<SearchContract.Presenter>(presenter);
+        public void setController(SearchContract.Controller controller) {
+            mController = new WeakReference<SearchContract.Controller>(controller);
         }
 
         public void setItem(List<T> list) {
@@ -75,11 +74,11 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
 
             if(mIsInfinityScrollActive && (position == getItemCount() - 1)) {
 
-                if(mPresenter != null) {
-                    SearchContract.Presenter presenter = mPresenter.get();
-                    if(presenter != null) {
+                if(mController != null) {
+                    SearchContract.Controller controller = mController.get();
+                    if(controller != null) {
 
-                        presenter.loadMoreQueryResult();;
+                        controller.loadMoreQueryResult();;
                         //TODO: add Loading bar
                     }
                 }
@@ -94,7 +93,7 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
 
     }
 
-    protected SearchContract.Presenter mPresenter;
+    protected SearchContract.Controller mController;
 
     protected RecyclerView mRecyclerView;
     protected ResponseListAdapter mAdapter;
@@ -126,13 +125,13 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         super.onActivityCreated(savedInstanceState);
 
         try{
-            mPresenter = (SearchContract.Presenter)getActivity();
-            mAdapter.setPresenter(mPresenter);
+            mController = (SearchContract.Controller)getActivity();
+            mAdapter.setController(mController);
         } catch (ClassCastException e) {
-            throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Presenter");
+            throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Controller");
         }
 
-        mAdapter.setQuery(mPresenter.getQuery());
+        mAdapter.setQuery(mController.getQuery());
         mAdapter.setItem(getResponseList());
     }
 
@@ -142,7 +141,7 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         mAdapter.clearItem();
         mAdapter.notifyDataSetChanged();
 
-        String message = String.format(getString(R.string.guide_empty_query_response), mPresenter.getQuery());
+        String message = String.format(getString(R.string.guide_empty_query_response), mController.getQuery());
 
         Util.showToastShort(getContext(), message);
     }
@@ -150,7 +149,7 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
     @Override
     public void updateQueryResult() {
 
-        mAdapter.setQuery(mPresenter.getQuery());
+        mAdapter.setQuery(mController.getQuery());
         mAdapter.setItem(getResponseList());
         mAdapter.notifyDataSetChanged();
     }

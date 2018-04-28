@@ -10,7 +10,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
     card_view:cardCornerRadius="5dp"
-    tools:context="com.laewoong.search.presenter.MainActivity">
+    tools:context="com.laewoong.search.controller.MainActivity">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"

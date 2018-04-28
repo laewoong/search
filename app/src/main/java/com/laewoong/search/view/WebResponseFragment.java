@@ -34,7 +34,7 @@ public class WebResponseFragment extends ResponseFragment<WebInfo> {
 
     @Override
     public List<WebInfo> getResponseList() {
-        return mPresenter.getWebQueryResponseList();
+        return mController.getWebQueryResponseList();
     }
 
 

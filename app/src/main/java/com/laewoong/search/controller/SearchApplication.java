@@ -1,4 +1,4 @@
-package com.laewoong.search.presenter;
+package com.laewoong.search.controller;
 
 import android.app.Application;
 

@@ -20,7 +20,7 @@ public interface SearchContract {
         void clearQueryResult();
     }
 
-    interface Presenter {
+    interface Controller {
 
         String getQuery();
         List<WebInfo> getWebQueryResponseList();

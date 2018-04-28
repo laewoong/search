@@ -24,7 +24,7 @@ import retrofit2.Response;
 
 public abstract class QueryTask<T extends QueryResponse, E> implements Runnable {
 
-    public interface OnQueryTaskResultListener<E> {
+        public interface OnQueryTaskResponseListener<E> {
 
         void onFailNetwork();
         void onSuccessQueryResponse(List<E> infoList);
@@ -38,11 +38,11 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
     protected NaverOpenAPIService mService;
     protected String mQuery;
     protected int mStart;
-    protected OnQueryTaskResultListener<E> mOnWebQueryResponseListener;
-    protected boolean mIsAlreadyArrivedFinalResponse;
+    protected OnQueryTaskResponseListener<E> mOnWebQueryResponseListener;
+    protected boolean mIsAlreadyArrivedFinalResponse; // 마지막 데이터가 로딩된 경우, 더이상 데이터 요청 하지 않기 위해 존재.
     protected Call<T> mCall;
 
-    public QueryTask(NaverOpenAPIService service, String query, int start, OnQueryTaskResultListener<E> listener) {
+    public QueryTask(NaverOpenAPIService service, String query, int start, OnQueryTaskResponseListener<E> listener) {
 
         mService = service;
         mQuery = query;
@@ -99,6 +99,7 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
                             mOnWebQueryResponseListener.onSuccessQueryResponse(webInfoList);
                         }
 
+                        // 같은 검색어로 추가 쿼리 요청을 위해 다음 start 값으로 변경.
                         mStart = result.getStart() + result.getDisplay();
                     }
 
@@ -145,7 +146,7 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
         return mIsAlreadyArrivedFinalResponse;
     }
 
-    public void cancle() {
+    public void cancel() {
 
         if((mCall != null) & (mCall.isCanceled() == false)) {
            mCall.cancel();
