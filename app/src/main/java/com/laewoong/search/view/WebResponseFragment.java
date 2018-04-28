@@ -75,10 +75,6 @@ public class WebResponseFragment extends ResponseFragment<WebInfo> {
         public void onBindView(ViewHolder holder, int position) {
 
             final WebInfo info = mDataset.get(position);
-            if(info == null) {
-                //TODO throw exception
-                return;
-            }
 
             holder.mTitleTextView.setText(Util.fromHtml(info.getTitle()));
             holder.mDescTextView.setText(Util.fromHtml(info.getDescription()));

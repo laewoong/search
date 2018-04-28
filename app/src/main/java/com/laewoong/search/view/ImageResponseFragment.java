@@ -114,11 +114,6 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
         public void onBindView(ViewHolder holder, final int position) {
 
             final ImageInfo info = mDataset.get(position);
-            if(info == null) {
-                //TODO throw exception
-
-                return;
-            }
 
             holder.mTitleTextView.setText(Util.fromHtml(info.getTitle()));
 
