@@ -10,7 +10,7 @@ import android.support.v7.widget.SearchView;
 import android.view.View;
 import android.widget.Button;
 
-import com.laewoong.search.OnQueryResponseListener;
+import com.laewoong.search.model.OnQueryResponseListener;
 import com.laewoong.search.R;
 import com.laewoong.search.SearchContract;
 import com.laewoong.search.model.response.ErrorCode;

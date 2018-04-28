@@ -6,7 +6,7 @@ import com.laewoong.search.model.response.ErrorCode;
 import com.laewoong.search.model.response.ErrorResponse;
 import com.laewoong.search.model.NaverOpenAPIService;
 import com.laewoong.search.model.response.QueryResponse;
-import com.laewoong.search.util.Constants;
+import com.laewoong.search.model.ModelConstants;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -24,7 +24,7 @@ import retrofit2.Response;
 
 public abstract class QueryTask<T extends QueryResponse, E> implements Runnable {
 
-    public interface OnQueryResponseListener<E> {
+    public interface OnQueryTaskResultListener<E> {
 
         void onFailNetwork();
         void onSuccessQueryResponse(List<E> infoList);
@@ -38,11 +38,11 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
     protected NaverOpenAPIService mService;
     protected String mQuery;
     protected int mStart;
-    protected OnQueryResponseListener<E> mOnWebQueryResponseListener;
+    protected OnQueryTaskResultListener<E> mOnWebQueryResponseListener;
     protected boolean mIsAlreadyArrivedFinalResponse;
     protected Call<T> mCall;
 
-    public QueryTask(NaverOpenAPIService service, String query, int start, OnQueryResponseListener<E> listener) {
+    public QueryTask(NaverOpenAPIService service, String query, int start, OnQueryTaskResultListener<E> listener) {
 
         mService = service;
         mQuery = query;
@@ -54,7 +54,7 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
     @Override
     public void run() {
 
-        if(mStart > Constants.MAX_START_VALUE) {
+        if(mStart > ModelConstants.MAX_START_VALUE) {
 
             if(mOnWebQueryResponseListener != null) {
 

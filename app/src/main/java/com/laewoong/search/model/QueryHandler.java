@@ -1,8 +1,5 @@
 package com.laewoong.search.model;
 
-import android.util.Log;
-
-import com.laewoong.search.OnQueryResponseListener;
 import com.laewoong.search.model.response.ErrorCode;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.model.response.WebInfo;
@@ -39,8 +36,8 @@ public class QueryHandler {
 
     private String mQuery;
 
-    private QueryTask.OnQueryResponseListener<WebInfo> mWebQueryResponseListener;
-    private QueryTask.OnQueryResponseListener<ImageInfo> mImageQueryResponseListener;
+    private QueryTask.OnQueryTaskResultListener<WebInfo> mWebQueryResponseListener;
+    private QueryTask.OnQueryTaskResultListener<ImageInfo> mImageQueryResponseListener;
 
     public QueryHandler() {
         mWebInfoList    = new LinkedList<WebInfo>();
@@ -58,7 +55,7 @@ public class QueryHandler {
 
     private void init() {
 
-        mWebQueryResponseListener = new QueryTask.OnQueryResponseListener<WebInfo>() {
+        mWebQueryResponseListener = new QueryTask.OnQueryTaskResultListener<WebInfo>() {
             @Override
             public void onFailNetwork() {
 
@@ -123,7 +120,7 @@ public class QueryHandler {
             }
         };
 
-        mImageQueryResponseListener = new QueryTask.OnQueryResponseListener<ImageInfo>() {
+        mImageQueryResponseListener = new QueryTask.OnQueryTaskResultListener<ImageInfo>() {
             @Override
             public void onFailNetwork() {
 

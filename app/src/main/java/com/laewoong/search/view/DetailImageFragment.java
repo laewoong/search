@@ -57,7 +57,6 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
         mRecyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
-        //mLayoutManager = new StaggeredGridLayoutManager(Constants.DEFAULT_GRID_SPAN_COUNT, StaggeredGridLayoutManager.VERTICAL);
         mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
 

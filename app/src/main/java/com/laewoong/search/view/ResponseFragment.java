@@ -115,7 +115,6 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         mRecyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
-        //mLayoutManager = new StaggeredGridLayoutManager(Constants.DEFAULT_GRID_SPAN_COUNT, StaggeredGridLayoutManager.VERTICAL);
         mLayoutManager = createLayoutManager();
         mRecyclerView.setLayoutManager(mLayoutManager);
 

@@ -2,7 +2,6 @@ package com.laewoong.search.model;
 
 import com.laewoong.search.model.response.QueryResponseImage;
 import com.laewoong.search.model.response.QueryResponseWeb;
-import com.laewoong.search.util.Constants;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -18,8 +17,8 @@ import retrofit2.http.Query;
 public interface NaverOpenAPIService {
 
     @Headers({
-            "X-Naver-Client-Id:" + Constants.CLIENT_ID,
-            "X-Naver-Client-Secret:" + Constants.CLIENT_SECRET
+            "X-Naver-Client-Id:" + ModelConstants.CLIENT_ID,
+            "X-Naver-Client-Secret:" + ModelConstants.CLIENT_SECRET
     })
 
     @GET("webkr.json")
@@ -30,8 +29,8 @@ public interface NaverOpenAPIService {
 
 
     @Headers({
-            "X-Naver-Client-Id:" + Constants.CLIENT_ID,
-            "X-Naver-Client-Secret:" + Constants.CLIENT_SECRET
+            "X-Naver-Client-Id:" + ModelConstants.CLIENT_ID,
+            "X-Naver-Client-Secret:" + ModelConstants.CLIENT_SECRET
     })
 
     @GET("image.json")
@@ -43,7 +42,7 @@ public interface NaverOpenAPIService {
             @Query("filter") String filter);
 
     public static final Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl(Constants.BASE_URL)
+            .baseUrl(ModelConstants.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build();
 }
