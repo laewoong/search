@@ -20,6 +20,7 @@ import com.bogdwellers.pinchtozoom.ImageMatrixTouchHandler;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.R;
 import com.laewoong.search.SearchContract;
+import com.laewoong.search.util.Util;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -242,7 +243,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
                         @Override
                         public void run() {
 
-                            Toast.makeText(mContext.getApplicationContext(), mContext.getString(R.string.guide_internal_error), Toast.LENGTH_LONG).show();
+                            Util.showToastLong(mContext.getApplicationContext(), mContext.getString(R.string.guide_internal_error));
                         }
                     });
                 }

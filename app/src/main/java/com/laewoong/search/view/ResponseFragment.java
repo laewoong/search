@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.laewoong.search.R;
 import com.laewoong.search.SearchContract;
+import com.laewoong.search.util.Util;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -149,7 +150,7 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
 
         String message = String.format(getString(R.string.guide_empty_query_response), mPresenter.getQuery());
 
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        Util.showToastShort(getContext(), message);
     }
 
     @Override
@@ -164,13 +165,13 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
     public void handleFinalQueryResult() {
 
         mAdapter.setInfinityScroll(false);
-        Toast.makeText(getContext(), getString(R.string.guide_final_query_response), Toast.LENGTH_LONG).show();
+        Util.showToastLong(getContext(), getString(R.string.guide_final_query_response));
     }
 
     @Override
     public void showErrorMessage(String errorMessage) {
 
-        Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
+        Util.showToastShort(getContext(), errorMessage);
     }
 
     @Override

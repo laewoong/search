@@ -142,7 +142,7 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
                         @Override
                         public void run() {
 
-                            Toast.makeText(mContext.getApplicationContext(), mContext.getString(R.string.guide_internal_error), Toast.LENGTH_LONG).show();
+                            Util.showToastLong(mContext.getApplicationContext(), mContext.getString(R.string.guide_internal_error));
                         }
                     });
                 }
