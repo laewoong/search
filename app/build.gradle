@@ -16,6 +16,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
@@ -37,4 +41,7 @@ dependencies {
     compile 'com.bogdwellers:pinchtozoom:0.1'
     compile 'info.hoang8f:android-segmented:1.0.6'
 
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.2'
+
+    compile 'com.jakewharton.rxbinding2:rxbinding:2.1.1'
 }

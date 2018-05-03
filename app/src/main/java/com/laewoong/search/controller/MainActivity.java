@@ -6,9 +6,11 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.view.View;
+import android.util.Log;
 import android.widget.RadioButton;
 
+import com.jakewharton.rxbinding2.view.RxView;
+import com.jakewharton.rxbinding2.widget.RxSearchView;
 import com.laewoong.search.R;
 import com.laewoong.search.SearchContract;
 import com.laewoong.search.model.response.ImageInfo;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import info.hoang8f.android.segmented.SegmentedGroup;
+import io.reactivex.Observable;
 
 public class MainActivity extends AppCompatActivity implements SearchContract.Controller {
 
@@ -30,8 +33,6 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Co
     public static final String KEY_LATEST_TAG = "com.laewoong.search.controller.MainActivity.KEY_LATEST_TAG";
 
     private SearchView  mSearchView;
-    private RadioButton mWebTabButton;
-    private RadioButton mImageTabButton;
 
     private QueryHandler mQueryHandler;
     private BackPressCloseHandler mBackPressCloseHandler;
@@ -46,9 +47,6 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Co
         setContentView(R.layout.activity_main);
 
         mSearchView = (SearchView)findViewById(R.id.searchview_query);
-
-        mWebTabButton = (RadioButton)findViewById(R.id.button_web);
-        mImageTabButton = (RadioButton)findViewById(R.id.button_image);
 
         mQueryHandler = ((SearchApplication)getApplication()).getQueryHandler();
         mBackPressCloseHandler = new BackPressCloseHandler(this);
@@ -105,46 +103,28 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Co
         mSearchView.setSubmitButtonEnabled(true);
         mSearchView.setQueryRefinementEnabled(true);
 
+        Observable<String> webButtonObservable = RxView.clicks(findViewById(R.id.button_web))
+                .map(event -> WebQueryResponseController.TAG);
 
-        mWebTabButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        Observable<String> imageButtonObservale = RxView.clicks(findViewById(R.id.button_image))
+                .map(event -> ImageQueryResponseController.TAG);
 
-                final String query = mSearchView.getQuery().toString().trim();
+        Observable.merge(webButtonObservable, imageButtonObservale)
+                .subscribe(TAG -> {
+                    final String query = mSearchView.getQuery().toString().trim();
 
-                CURRENT_RESPONSE_CONTROLLER_TAG = WebQueryResponseController.TAG;
-                QueryResponseController controller = mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG);
-                controller.show();
+                    CURRENT_RESPONSE_CONTROLLER_TAG = TAG;
+                    QueryResponseController controller = mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG);
+                    controller.show();
 
-                if(query.isEmpty()) {
+                    if(query.isEmpty()) {
 
-                    return;
-                }
+                        return;
+                    }
 
-                controller.query(query);
-                mSearchView.clearFocus();
-            }
-        });
-
-        mImageTabButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                final String query = mSearchView.getQuery().toString().trim();
-
-                CURRENT_RESPONSE_CONTROLLER_TAG = ImageQueryResponseController.TAG;
-                QueryResponseController controller = mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG);
-                controller.show();
-
-                if(query.isEmpty()) {
-
-                    return;
-                }
-
-                controller.query(query);
-                mSearchView.clearFocus();
-            }
-        });
+                    controller.query(query);
+                    mSearchView.clearFocus();
+                });
 
         // Init tab view's hint color
         SegmentedGroup tabGroup = (SegmentedGroup)findViewById(R.id.container_tab);
