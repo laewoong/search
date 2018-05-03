@@ -5,7 +5,10 @@ import com.laewoong.search.model.response.QueryResponseWeb;
 import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.model.ModelConstants;
 
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Created by laewoong on 2018. 4. 23..
@@ -24,7 +27,7 @@ public class WebQueryTask extends QueryTask<QueryResponseWeb, WebInfo> {
     }
 
     @Override
-    public Call<QueryResponseWeb> getQuery() {
+    public Flowable<Response<QueryResponseWeb>> getQuery() {
 
         return mService.queryWeb(mQuery, mStart, ModelConstants.DEFAULT_WEB_DISPALY);
     }
