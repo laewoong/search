@@ -167,7 +167,11 @@ public class WebQueryResponseController implements QueryResponseController {
 
     @Override
     public void queryMore() {
-        mQueryHandler.queryWebMore();
+        try {
+            mQueryHandler.queryMore();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

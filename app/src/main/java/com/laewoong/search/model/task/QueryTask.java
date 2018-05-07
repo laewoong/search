@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
+import io.reactivex.functions.BiFunction;
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -24,7 +25,7 @@ import retrofit2.Response;
  * Created by laewoong on 2018. 4. 27..
  */
 
-public abstract class QueryTask<T extends QueryResponse, E> implements Runnable {
+public class QueryTask<T extends QueryResponse, E> implements Runnable {
 
         public interface OnQueryTaskResponseListener<E> {
 
@@ -35,22 +36,22 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
         void onFinalQueryResponse();
     }
 
-    public static final String TAG = WebQueryTask.class.getSimpleName();
+    public static final String TAG = QueryTask.class.getSimpleName();
 
-    protected NaverOpenAPIService mService;
     protected String mQuery;
     protected int mStart;
     protected OnQueryTaskResponseListener<E> mOnWebQueryResponseListener;
     protected boolean mIsAlreadyArrivedFinalResponse; // 마지막 데이터가 로딩된 경우, 더이상 데이터 요청 하지 않기 위해 존재.
     protected Disposable mTaskDispoable;
+    protected BiFunction<String, Integer, Flowable<Response<T>>> mQueryFlowableFunction;
 
-    public QueryTask(NaverOpenAPIService service, String query, int start, OnQueryTaskResponseListener<E> listener) {
+    public QueryTask(String query, int start, OnQueryTaskResponseListener<E> listener, BiFunction<String, Integer, Flowable<Response<T>>> queryFlowableFunction) {
 
-        mService = service;
         mQuery = query;
         mStart = start;
         mOnWebQueryResponseListener = listener;
         mIsAlreadyArrivedFinalResponse = false;
+        mQueryFlowableFunction = queryFlowableFunction;
     }
 
     @Override
@@ -66,66 +67,70 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
             return;
         }
 
-        mTaskDispoable = getQuery()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(response -> {
-                    if (response.isSuccessful()) {
+        try {
+            mTaskDispoable = mQueryFlowableFunction.apply(mQuery, mStart)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(response -> {
+                        if (response.isSuccessful()) {
 
-                        T result = response.body();
+                            T result = response.body();
 
-                        List<E> webInfoList = result.getItems();
+                            List<E> webInfoList = result.getItems();
 
-                        if (webInfoList.isEmpty()) {
+                            if (webInfoList.isEmpty()) {
 
-                            if (mOnWebQueryResponseListener != null) {
+                                if (mOnWebQueryResponseListener != null) {
 
-                                mOnWebQueryResponseListener.onEmptyQueryResponse();
-                            }
-                            return;
-                        }
-
-                        mStart = result.getStart() + result.getDisplay();
-
-                        if ((mStart - 1) <= result.getTotal()) {
-
-                            if (mOnWebQueryResponseListener != null) {
-
-                                mOnWebQueryResponseListener.onSuccessQueryResponse(webInfoList);
+                                    mOnWebQueryResponseListener.onEmptyQueryResponse();
+                                }
+                                return;
                             }
 
-                            // 같은 검색어로 추가 쿼리 요청을 위해 다음 start 값으로 변경.
                             mStart = result.getStart() + result.getDisplay();
-                        }
 
-                        if (mStart > result.getTotal()) {
-                            if (mOnWebQueryResponseListener != null) {
+                            if ((mStart - 1) <= result.getTotal()) {
 
-                                mIsAlreadyArrivedFinalResponse = true;
-                                mOnWebQueryResponseListener.onFinalQueryResponse();
-                            }
-                        }
+                                if (mOnWebQueryResponseListener != null) {
 
-                    }
-                    else {
-                        Converter<ResponseBody, ErrorResponse> errorConverter =
-                                NaverOpenAPIService.retrofit.responseBodyConverter(ErrorResponse.class, new Annotation[0]);
-                        try{
+                                    mOnWebQueryResponseListener.onSuccessQueryResponse(webInfoList);
+                                }
 
-                            ErrorResponse error = errorConverter.convert(response.errorBody());
-
-                            if(mOnWebQueryResponseListener != null) {
-
-                                mOnWebQueryResponseListener.onErrorQueryResponse(ErrorCode.valueOf(error.errorCode));
+                                // 같은 검색어로 추가 쿼리 요청을 위해 다음 start 값으로 변경.
+                                mStart = result.getStart() + result.getDisplay();
                             }
 
-                        }catch (IOException e) {
-                            Log.i(TAG, "IOException : " + e.getMessage());
+                            if (mStart > result.getTotal()) {
+                                if (mOnWebQueryResponseListener != null) {
+
+                                    mIsAlreadyArrivedFinalResponse = true;
+                                    mOnWebQueryResponseListener.onFinalQueryResponse();
+                                }
+                            }
+
                         }
-                    }
-                }, throwable -> {
-                    mOnWebQueryResponseListener.onFailNetwork();
-                });
+                        else {
+                            Converter<ResponseBody, ErrorResponse> errorConverter =
+                                    NaverOpenAPIService.retrofit.responseBodyConverter(ErrorResponse.class, new Annotation[0]);
+                            try{
+
+                                ErrorResponse error = errorConverter.convert(response.errorBody());
+
+                                if(mOnWebQueryResponseListener != null) {
+
+                                    mOnWebQueryResponseListener.onErrorQueryResponse(ErrorCode.valueOf(error.errorCode));
+                                }
+
+                            }catch (IOException e) {
+                                Log.i(TAG, "IOException : " + e.getMessage());
+                            }
+                        }
+                    }, throwable -> {
+                        mOnWebQueryResponseListener.onFailNetwork();
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean isAlreadyArrivedFinalResponse() {
@@ -138,6 +143,4 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
            mTaskDispoable.dispose();
         }
     }
-
-    public abstract Flowable<Response<T>> getQuery();
 }

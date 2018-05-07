@@ -193,7 +193,11 @@ public class ImageQueryResponseController implements QueryResponseController, Im
 
     @Override
     public void queryMore() {
-        mQueryHandler.queryImageMore();
+        try {
+            mQueryHandler.queryMore();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -1,13 +1,11 @@
 package com.laewoong.search.model;
 
-import android.util.Log;
-
 import com.laewoong.search.model.response.ErrorCode;
 import com.laewoong.search.model.response.ImageInfo;
+import com.laewoong.search.model.response.QueryResponseImage;
+import com.laewoong.search.model.response.QueryResponseWeb;
 import com.laewoong.search.model.response.WebInfo;
-import com.laewoong.search.model.task.ImageQueryTask;
 import com.laewoong.search.model.task.QueryTask;
-import com.laewoong.search.model.task.WebQueryTask;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -30,8 +28,7 @@ public class QueryHandler {
 
     private NaverOpenAPIService mService;
 
-    private WebQueryTask mWebQueryTask;
-    private ImageQueryTask mImageQueryTask;
+    private QueryTask mQueryTask;
 
     private String mQuery;
 
@@ -183,22 +180,14 @@ public class QueryHandler {
         mWebInfoList.clear();
 
         // 다른 탭에서 웹 탭으로 넘어온 경우 기존 탭 요청은 무효하므로 취소.
-        if(mImageQueryTask != null) {
-            mImageQueryTask.cancel();
+        if(mQueryTask != null) {
+            mQueryTask.cancel();
         }
 
-        if(mWebQueryTask != null) {
-            mWebQueryTask.cancel();
-        }
+        mQueryTask = new QueryTask<QueryResponseWeb, WebInfo>(query, 1, mWebQueryTaskResponseListener,
+                (_query, _start) -> mService.queryWeb(_query, _start, ModelConstants.DEFAULT_WEB_DISPALY));
 
-        mWebQueryTask = new WebQueryTask(mService, query, mWebQueryTaskResponseListener);
-        mWebQueryTask.run();
-    }
-
-    public void queryWebMore() {
-        if(mWebQueryTask.isAlreadyArrivedFinalResponse() == false) {
-            mWebQueryTask.run();
-        }
+        mQueryTask.run();
     }
 
     public void queryImage(final String query) {
@@ -208,23 +197,27 @@ public class QueryHandler {
         mImageInfoList.clear();
 
         // 다른 탭에서 이미지 탭으로 넘어온 경우 기존 탭 요청은 무효하므로 취소.
-        if(mWebQueryTask != null) {
-            mWebQueryTask.cancel();
+        if(mQueryTask != null) {
+            mQueryTask.cancel();
         }
 
-        if(mImageQueryTask != null) {
-            mImageQueryTask.cancel();
-        }
+        mQueryTask = new QueryTask<QueryResponseImage, ImageInfo>(query, 1, mImageQueryTaskResponseListener,
+                (_query, _start) -> mService.queryImage(_query, _start,
+                        ModelConstants.DEFAULT_IMAGE_DISPALY,
+                        ModelConstants.DEFAULT_IMAGE_SORT,
+                        ModelConstants.DEFAULT_IMAGE_FILTER));
 
-        mImageQueryTask = new ImageQueryTask(mService, query, mImageQueryTaskResponseListener);
-
-        mImageQueryTask.run();
+        mQueryTask.run();
     }
 
-    public void queryImageMore() {
+    public void queryMore() throws IllegalStateException {
 
-        if(mImageQueryTask.isAlreadyArrivedFinalResponse() == false) {
-            mImageQueryTask.run();
+        if(mQueryTask == null) {
+            throw new IllegalStateException("이전 요청이 존재하지 않습니다.");
+        }
+
+        if(mQueryTask.isAlreadyArrivedFinalResponse() == false) {
+            mQueryTask.run();
         }
     }
 }
