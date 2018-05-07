@@ -67,6 +67,7 @@ public abstract class QueryTask<T extends QueryResponse, E> implements Runnable 
         }
 
         mTaskDispoable = getQuery()
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(response -> {
                     if (response.isSuccessful()) {

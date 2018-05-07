@@ -1,17 +1,18 @@
 package com.laewoong.search.model;
 
+import android.util.Log;
+
 import com.laewoong.search.model.response.ErrorCode;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.model.task.ImageQueryTask;
 import com.laewoong.search.model.task.QueryTask;
 import com.laewoong.search.model.task.WebQueryTask;
-import com.laewoong.search.util.LowPriorityThreadFactory;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+import io.reactivex.Observable;
 
 /**
  * Created by laewoong on 2018. 4. 21..
@@ -26,8 +27,6 @@ public class QueryHandler {
 
     private List<OnQueryResponseListener> mWebQueryResponseClientListenerList;
     private List<OnQueryResponseListener> mImageQueryResponseClientListenerList;
-
-    private final ExecutorService mExecutorService;
 
     private NaverOpenAPIService mService;
 
@@ -46,8 +45,6 @@ public class QueryHandler {
         mWebQueryResponseClientListenerList = new LinkedList<OnQueryResponseListener>();
         mImageQueryResponseClientListenerList = new LinkedList<OnQueryResponseListener>();
 
-        mExecutorService = Executors.newCachedThreadPool(new LowPriorityThreadFactory());
-
         mService = NaverOpenAPIService.retrofit.create(NaverOpenAPIService.class);
 
         init();
@@ -59,13 +56,8 @@ public class QueryHandler {
             @Override
             public void onFailNetwork() {
 
-                if(mWebQueryResponseClientListenerList.isEmpty()) {
-                    return;
-                }
-
-                for(OnQueryResponseListener listener : mWebQueryResponseClientListenerList) {
-                    listener.onFailNetwork();
-                }
+                Observable.fromIterable(mWebQueryResponseClientListenerList)
+                        .subscribe(listener -> listener.onFailNetwork());
             }
 
             @Override
@@ -73,50 +65,29 @@ public class QueryHandler {
 
                 mWebInfoList.addAll(infoList);
 
-                if(mWebQueryResponseClientListenerList.isEmpty()) {
-                    return;
-                }
-
-                for(OnQueryResponseListener listener : mWebQueryResponseClientListenerList) {
-                    listener.onSuccessResponse();
-                }
+                Observable.fromIterable(mWebQueryResponseClientListenerList)
+                        .subscribe(listener -> listener.onSuccessResponse());
             }
 
             @Override
             public void onErrorQueryResponse(ErrorCode errorCode) {
 
-                if(mWebQueryResponseClientListenerList.isEmpty()) {
-                    return;
-                }
-
-                for(OnQueryResponseListener listener : mWebQueryResponseClientListenerList) {
-
-                    listener.onErrorQueryResponse(errorCode);
-                }
+                Observable.fromIterable(mWebQueryResponseClientListenerList)
+                        .subscribe(listener -> listener.onErrorQueryResponse(errorCode));
             }
 
             @Override
             public void onEmptyQueryResponse() {
-                if(mWebQueryResponseClientListenerList.isEmpty()) {
-                    return;
-                }
 
-                for(OnQueryResponseListener listener : mWebQueryResponseClientListenerList) {
-
-                    listener.onEmptyResponse();
-                }
+                Observable.fromIterable(mWebQueryResponseClientListenerList)
+                        .subscribe(listener -> listener.onEmptyResponse());
             }
 
             @Override
             public void onFinalQueryResponse() {
 
-                if(mWebQueryResponseClientListenerList.isEmpty()) {
-                    return;
-                }
-
-                for(OnQueryResponseListener listener : mWebQueryResponseClientListenerList) {
-                    listener.onFinalResponse();
-                }
+                Observable.fromIterable(mWebQueryResponseClientListenerList)
+                        .subscribe(listener -> listener.onFinalResponse());
             }
         };
 
@@ -124,13 +95,8 @@ public class QueryHandler {
             @Override
             public void onFailNetwork() {
 
-                if(mImageQueryResponseClientListenerList.isEmpty()) {
-                    return;
-                }
-
-                for(OnQueryResponseListener listener : mImageQueryResponseClientListenerList) {
-                    listener.onFailNetwork();
-                }
+                Observable.fromIterable(mImageQueryResponseClientListenerList)
+                        .subscribe(listener -> listener.onFailNetwork());
             }
 
             @Override
@@ -138,13 +104,8 @@ public class QueryHandler {
 
                 mImageInfoList.addAll(infoList);
 
-                if(mImageQueryResponseClientListenerList.isEmpty()) {
-                    return;
-                }
-
-                for(OnQueryResponseListener listener : mImageQueryResponseClientListenerList) {
-                    listener.onSuccessResponse();
-                }
+                Observable.fromIterable(mImageQueryResponseClientListenerList)
+                        .subscribe(listener -> listener.onSuccessResponse());
             }
 
             @Override
@@ -154,10 +115,8 @@ public class QueryHandler {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mImageQueryResponseClientListenerList) {
-
-                    listener.onErrorQueryResponse(errorCode);
-                }
+                Observable.fromIterable(mImageQueryResponseClientListenerList)
+                        .subscribe(listener -> onErrorQueryResponse(errorCode));
             }
 
             @Override
@@ -167,29 +126,20 @@ public class QueryHandler {
                     return;
                 }
 
-                for(OnQueryResponseListener listener : mImageQueryResponseClientListenerList) {
-
-                    listener.onEmptyResponse();
-                }
+                Observable.fromIterable(mImageQueryResponseClientListenerList)
+                        .subscribe(listener -> listener.onEmptyResponse());
             }
 
             @Override
             public void onFinalQueryResponse() {
 
-                if(mImageQueryResponseClientListenerList.isEmpty()) {
-                    return;
-                }
-
-                for(OnQueryResponseListener listener : mImageQueryResponseClientListenerList) {
-                    listener.onFinalResponse();
-                }
+                Observable.fromIterable(mImageQueryResponseClientListenerList)
+                        .subscribe(listener -> listener.onFinalResponse());
             }
         };
     }
 
     public void release() {
-
-        mExecutorService.shutdownNow();
 
         mWebInfoList.clear();
         mImageInfoList.clear();
@@ -242,12 +192,12 @@ public class QueryHandler {
         }
 
         mWebQueryTask = new WebQueryTask(mService, query, mWebQueryTaskResponseListener);
-        mExecutorService.execute(mWebQueryTask);
+        mWebQueryTask.run();
     }
 
     public void queryWebMore() {
         if(mWebQueryTask.isAlreadyArrivedFinalResponse() == false) {
-            mExecutorService.execute(mWebQueryTask);
+            mWebQueryTask.run();
         }
     }
 
@@ -268,13 +218,13 @@ public class QueryHandler {
 
         mImageQueryTask = new ImageQueryTask(mService, query, mImageQueryTaskResponseListener);
 
-        mExecutorService.execute(mImageQueryTask);
+        mImageQueryTask.run();
     }
 
     public void queryImageMore() {
 
         if(mImageQueryTask.isAlreadyArrivedFinalResponse() == false) {
-            mExecutorService.execute(mImageQueryTask);
+            mImageQueryTask.run();
         }
     }
 }
