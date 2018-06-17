@@ -1,5 +1,7 @@
 package com.laewoong.search.view;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -7,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +23,7 @@ import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.R;
 import com.laewoong.search.SearchContract;
 import com.laewoong.search.util.Util;
+import com.laewoong.search.viewmodel.SearchViewModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -41,11 +45,45 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
 
     private int mPosition = 0;
 
+    private SearchViewModel searchViewModel;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setRetainInstance(true);
+
+        searchViewModel = ViewModelProviders.of(getActivity()).get(SearchViewModel.class);
+
+        searchViewModel.getImageInfoList().observe(this, new Observer<List<ImageInfo>>() {
+            @Override
+            public void onChanged(@Nullable List<ImageInfo> imageInfos) {
+                mAdapter.setItem(imageInfos);
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+
+        searchViewModel.getErrorMessage().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String message) {
+                showErrorMessage(message);
+            }
+        });
+
+        searchViewModel.getSelectedDetailImagePosition().observe(this, new Observer<Integer>() {
+            @Override
+            public void onChanged(@Nullable Integer position) {
+                mPosition = position;
+                mRecyclerView.scrollToPosition(mPosition);
+            }
+        });
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        setRetainInstance(true);
+
 
         View view = inflater.inflate(R.layout.fragment_image_detail, container, false);
 
@@ -79,9 +117,14 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
         mPrevButton = (Button)view.findViewById(R.id.button_prev);
         mNextButton = (Button)view.findViewById(R.id.button_next);
 
-        mPosition = getArguments().getInt(KEY_POSITION);
+        //mPosition = getArguments().getInt(KEY_POSITION);
 
         setButtonVisibleState();
+
+        mAdapter.setItem(searchViewModel.getImageInfoList().getValue());
+        mAdapter.notifyDataSetChanged();
+        mPosition = searchViewModel.getSelectedDetailImagePosition().getValue();
+        mRecyclerView.scrollToPosition(mPosition);
 
         return view;
     }
@@ -96,18 +139,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        try{
-            mController = (SearchContract.Controller)getActivity();
-            mAdapter.setController(mController);
-        } catch (ClassCastException e) {
-            throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Controller");
-        }
-
-        mAdapter.setQuery(mController.getQuery());
-        mAdapter.setItem(mController.getImageQueryResponseList());
-
         mRecyclerView.scrollToPosition(mPosition);
-
         mPrevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -149,11 +181,6 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
     @Override
     public ResponseListAdapter createResponseListAdapter() {
         return new DetailImageListAdapter(getContext());
-    }
-
-    @Override
-    public List<ImageInfo> getResponseList() {
-        return mController.getImageQueryResponseList();
     }
 
     private void setButtonVisibleState() {

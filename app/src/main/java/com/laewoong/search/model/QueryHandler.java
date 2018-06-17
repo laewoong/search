@@ -1,5 +1,8 @@
 package com.laewoong.search.model;
 
+import android.arch.lifecycle.LifecycleOwner;
+import android.util.Log;
+
 import com.laewoong.search.model.response.ErrorCode;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.model.response.QueryResponseImage;
@@ -34,6 +37,12 @@ public class QueryHandler {
 
     private QueryTask.OnQueryTaskResponseListener<WebInfo> mWebQueryTaskResponseListener;
     private QueryTask.OnQueryTaskResponseListener<ImageInfo> mImageQueryTaskResponseListener;
+
+    private LifecycleOwner lifecycleOwner;
+
+    public QueryHandler(LifecycleOwner owner) {
+        this.lifecycleOwner = owner;
+    }
 
     public QueryHandler() {
         mWebInfoList    = new LinkedList<WebInfo>();
@@ -139,6 +148,7 @@ public class QueryHandler {
     public void release() {
 
         mWebInfoList.clear();
+        Log.i("fff", "================================= here1111");
         mImageInfoList.clear();
 
         mWebQueryResponseClientListenerList.clear();
@@ -193,7 +203,7 @@ public class QueryHandler {
     public void queryImage(final String query) {
 
         mQuery = query.trim();
-
+        Log.i("fff", "================================= 222222");
         mImageInfoList.clear();
 
         // 다른 탭에서 이미지 탭으로 넘어온 경우 기존 탭 요청은 무효하므로 취소.

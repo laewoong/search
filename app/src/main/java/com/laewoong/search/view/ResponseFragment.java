@@ -30,22 +30,19 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         protected Handler mUiHandler;
         protected boolean mIsInfinityScrollActive;
 
-        protected WeakReference<SearchContract.Controller> mController;;
-
         public ResponseListAdapter() {
 
             mUiHandler = new Handler(Looper.getMainLooper());
             mIsInfinityScrollActive = true;
         }
 
-        public void setController(SearchContract.Controller controller) {
-            mController = new WeakReference<SearchContract.Controller>(controller);
-        }
-
         public void setItem(List<T> list) {
             mDataset = list;
         }
         public void clearItem() {
+            if(mDataset == null) {
+                return;
+            }
             mDataset.clear();
         }
 
@@ -74,14 +71,14 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
 
             if(mIsInfinityScrollActive && (position == getItemCount() - 1)) {
 
-                if(mController != null) {
-                    SearchContract.Controller controller = mController.get();
-                    if(controller != null) {
-
-                        controller.loadMoreQueryResult();;
-                        //TODO: add Loading bar
-                    }
-                }
+//                if(mController != null) {
+//                    SearchContract.Controller controller = mController.get();
+//                    if(controller != null) {
+//
+//                        controller.loadMoreQueryResult();;
+//                        //TODO: add Loading bar
+//                    }
+//                }
             }
         }
 
@@ -92,8 +89,6 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         }
 
     }
-
-    protected SearchContract.Controller mController;
 
     protected RecyclerView mRecyclerView;
     protected ResponseListAdapter mAdapter;
@@ -124,33 +119,25 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        try{
-            mController = (SearchContract.Controller)getActivity();
-            mAdapter.setController(mController);
-        } catch (ClassCastException e) {
-            throw new ClassCastException(getActivity().toString() + " must implement SearchContract.Controller");
-        }
-
-        mAdapter.setQuery(mController.getQuery());
-        mAdapter.setItem(getResponseList());
+        //mAdapter.setItem(getResponseList());
     }
 
     @Override
     public void handleEmptyQueryResult() {
 
-        mAdapter.clearItem();
-        mAdapter.notifyDataSetChanged();
+        //mAdapter.clearItem();
+        //mAdapter.notifyDataSetChanged();
 
-        String message = String.format(getString(R.string.guide_empty_query_response), mController.getQuery());
+        //String message = String.format(getString(R.string.guide_empty_query_response), mController.getQuery());
 
-        Util.showToastShort(getContext(), message);
+        //Util.showToastShort(getContext(), message);
     }
 
     @Override
     public void updateQueryResult() {
 
-        mAdapter.setQuery(mController.getQuery());
-        mAdapter.setItem(getResponseList());
+        //mAdapter.setQuery(mController.getQuery());
+        //mAdapter.setItem(getResponseList());
         mAdapter.notifyDataSetChanged();
     }
 
@@ -177,5 +164,5 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
 
     public abstract RecyclerView.LayoutManager createLayoutManager();
     public abstract ResponseListAdapter createResponseListAdapter();
-    public abstract List<T> getResponseList();
+    //public abstract List<T> getResponseList();
 }

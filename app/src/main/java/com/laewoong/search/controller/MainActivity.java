@@ -1,8 +1,13 @@
 package com.laewoong.search.controller;
 
 import android.app.SearchManager;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.graphics.Color;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
@@ -17,6 +22,11 @@ import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.model.QueryHandler;
 import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.util.BackPressCloseHandler;
+import com.laewoong.search.view.DetailImageFragment;
+import com.laewoong.search.view.ImageResponseFragment;
+import com.laewoong.search.view.ResponseFragment;
+import com.laewoong.search.view.WebResponseFragment;
+import com.laewoong.search.viewmodel.SearchViewModel;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -26,20 +36,13 @@ import java.util.Map;
 import info.hoang8f.android.segmented.SegmentedGroup;
 import io.reactivex.Observable;
 
-public class MainActivity extends AppCompatActivity implements SearchContract.Controller {
+public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
-    public static final String KEY_LATEST_TAG = "com.laewoong.search.controller.MainActivity.KEY_LATEST_TAG";
-
     private SearchView  mSearchView;
-
-    private QueryHandler mQueryHandler;
     private BackPressCloseHandler mBackPressCloseHandler;
-
-    private Map<String, QueryResponseController> mResponseControllerMap;
-
-    private String CURRENT_RESPONSE_CONTROLLER_TAG;
+    private SearchViewModel searchViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,27 +50,33 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Co
         setContentView(R.layout.activity_main);
 
         mSearchView = (SearchView)findViewById(R.id.searchview_query);
-
-        mQueryHandler = ((SearchApplication)getApplication()).getQueryHandler();
         mBackPressCloseHandler = new BackPressCloseHandler(this);
-
-        mResponseControllerMap = new HashMap<String, QueryResponseController>(2);
-        mResponseControllerMap.put(WebQueryResponseController.TAG, new WebQueryResponseController(this, mQueryHandler, R.id.container_fragment));
-        mResponseControllerMap.put(ImageQueryResponseController.TAG, new ImageQueryResponseController(this, mQueryHandler, R.id.container_fragment, R.id.container_root));
+        searchViewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
 
         init();
+    }
 
-        // 처음 Activity가 생성된 것이 아니라면 가장 최근 탭으로 복구
-        if((savedInstanceState != null) && savedInstanceState.containsKey(KEY_LATEST_TAG)) {
+    private void setCurFragment(final String tag) {
 
-            CURRENT_RESPONSE_CONTROLLER_TAG = savedInstanceState.getString(KEY_LATEST_TAG);
+        Fragment fragment = null;
+        if(tag.equals(WebResponseFragment.TAG)) {
+            fragment = getSupportFragmentManager().findFragmentByTag(WebResponseFragment.TAG);
+            if(fragment == null) {
+                fragment = new WebResponseFragment();
+            }
         }
-        else {
-
-            CURRENT_RESPONSE_CONTROLLER_TAG = WebQueryResponseController.TAG;
+        else if(tag.equals(ImageResponseFragment.TAG)) {
+            fragment = getSupportFragmentManager().findFragmentByTag(ImageResponseFragment.TAG);
+            if(fragment == null) {
+                fragment = new ImageResponseFragment();
+            }
         }
 
-        mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG).show();
+        if(fragment == null) {
+            return;
+        }
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.container_fragment, fragment, tag).commit();
     }
 
 
@@ -85,8 +94,7 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Co
                 }
 
                 mSearchView.clearFocus();
-
-                mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG).query(query);
+                searchViewModel.getQuery().setValue(query);
 
                 return false;
             }
@@ -104,31 +112,38 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Co
         mSearchView.setQueryRefinementEnabled(true);
 
         Observable<String> webButtonObservable = RxView.clicks(findViewById(R.id.button_web))
-                .map(event -> WebQueryResponseController.TAG);
+                .map(event -> WebResponseFragment.TAG);
 
         Observable<String> imageButtonObservale = RxView.clicks(findViewById(R.id.button_image))
-                .map(event -> ImageQueryResponseController.TAG);
+                .map(event -> ImageResponseFragment.TAG);
 
         Observable.merge(webButtonObservable, imageButtonObservale)
                 .subscribe(TAG -> {
-                    final String query = mSearchView.getQuery().toString().trim();
 
-                    CURRENT_RESPONSE_CONTROLLER_TAG = TAG;
-                    QueryResponseController controller = mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG);
-                    controller.show();
-
-                    if(query.isEmpty()) {
-
-                        return;
-                    }
-
-                    controller.query(query);
-                    mSearchView.clearFocus();
+                    searchViewModel.getCurFragmentTag().setValue(TAG);
                 });
 
         // Init tab view's hint color
         SegmentedGroup tabGroup = (SegmentedGroup)findViewById(R.id.container_tab);
         tabGroup.setTintColor(Color.parseColor("#F06292"));
+
+        searchViewModel.getCurFragmentTag().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String fragmentTag) {
+
+                setCurFragment(fragmentTag);
+
+                final String query = mSearchView.getQuery().toString().trim();
+
+                if(query.isEmpty()) {
+
+                    return;
+                }
+
+                mSearchView.clearFocus();
+                searchViewModel.getQuery().setValue(query);
+            }
+        });
     }
 
     @Override
@@ -138,50 +153,5 @@ public class MainActivity extends AppCompatActivity implements SearchContract.Co
         } else {
             mBackPressCloseHandler.onBackPressed();
         }
-    }
-
-    @Override
-    protected void onSaveInstanceState (Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        // Save current tab info to restore when activity restart.
-        outState.putString(KEY_LATEST_TAG, CURRENT_RESPONSE_CONTROLLER_TAG);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mQueryHandler.addWebQueryResultListener(mResponseControllerMap.get(WebQueryResponseController.TAG).getOnQueryResponseListener());
-        mQueryHandler.addImageQueryResultListener(mResponseControllerMap.get(ImageQueryResponseController.TAG).getOnQueryResponseListener());
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mQueryHandler.removeWebQueryResultListener(mResponseControllerMap.get(WebQueryResponseController.TAG).getOnQueryResponseListener());
-        mQueryHandler.removeImageQueryResultListener(mResponseControllerMap.get(ImageQueryResponseController.TAG).getOnQueryResponseListener());
-    }
-
-    @Override
-    public String getQuery() {
-        return mQueryHandler.getQuery();
-    }
-
-    @Override
-    public List<WebInfo> getWebQueryResponseList() {
-
-        return new LinkedList<WebInfo>(mQueryHandler.getWebInfoList());
-    }
-
-    @Override
-    public List<ImageInfo> getImageQueryResponseList() {
-
-        return new LinkedList<ImageInfo>(mQueryHandler.getImageInfoList());
-    }
-
-    @Override
-    public void loadMoreQueryResult() {
-
-        mResponseControllerMap.get(CURRENT_RESPONSE_CONTROLLER_TAG).queryMore();
     }
 }
