@@ -43,7 +43,7 @@ public class SearchViewModel extends AndroidViewModel {
         query = new MutableLiveData<>();
         webInfoList = new MutableLiveData<>();
         imageInfoList = new MutableLiveData<>();
-Log.i("fff", "====[WARONG] NEW SearViewModel Create!");
+Log.i("fff", "====[WRONG] NEW SearViewModel Create!");
         errorMessage = new MutableLiveData<>();
         selectedDetailImagePosition = new MutableLiveData<>();
 
