@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,10 +29,16 @@ public class WebResponseFragment extends ResponseFragment<WebInfo> {
         super.onCreate(savedInstanceState);
 
         searchViewModel = ViewModelProviders.of(getActivity()).get(SearchViewModel.class);
+        observeViewModel();
+    }
+
+    private void observeViewModel() {
+
         searchViewModel.getQuery().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String query) {
                 searchViewModel.queryWeb(query);
+                mRecyclerView.scrollToPosition(0);
             }
         });
 
@@ -40,14 +47,15 @@ public class WebResponseFragment extends ResponseFragment<WebInfo> {
             public void onChanged(@Nullable List<WebInfo> webInfos) {
                 mAdapter.setItem(webInfos);
                 mAdapter.notifyDataSetChanged();
-                mRecyclerView.scrollToPosition(0);
             }
         });
 
-        searchViewModel.getErrorMessage().observe(this, new Observer<String>() {
+        searchViewModel.getStatusOfReachingEndOfList().observe(this, new Observer<Boolean>() {
             @Override
-            public void onChanged(@Nullable String message) {
-                showErrorMessage(message);
+            public void onChanged(@Nullable Boolean isReachedEndOfList) {
+                if(isReachedEndOfList) {
+                    searchViewModel.queryWebMore();
+                }
             }
         });
     }
@@ -69,6 +77,6 @@ public class WebResponseFragment extends ResponseFragment<WebInfo> {
 
     @Override
     public ResponseListAdapter createResponseListAdapter() {
-        return new WebResponseListAdapter();
+        return new WebResponseListAdapter(searchViewModel);
     }
 }

@@ -1,5 +1,6 @@
 package com.laewoong.search.view;
 
+import android.arch.lifecycle.LifecycleOwner;
 import android.support.v7.widget.RecyclerView;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import com.laewoong.search.R;
 import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.util.Util;
+import com.laewoong.search.viewmodel.SearchViewModel;
 
 public class WebResponseListAdapter extends ResponseListAdapter<WebResponseListAdapter.ViewHolder, WebInfo> {
 
@@ -25,6 +27,10 @@ public class WebResponseListAdapter extends ResponseListAdapter<WebResponseListA
             mDescTextView = (TextView) v.findViewById(R.id.textview_desc);
             mLinkTextView = (TextView) v.findViewById(R.id.textview_link);
         }
+    }
+
+    public WebResponseListAdapter(SearchViewModel viewModel) {
+        super(viewModel);
     }
 
     @Override

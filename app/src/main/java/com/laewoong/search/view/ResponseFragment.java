@@ -1,8 +1,6 @@
 package com.laewoong.search.view;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
@@ -11,17 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.laewoong.search.R;
-import com.laewoong.search.SearchContract;
-import com.laewoong.search.util.Util;
-
-import java.lang.ref.WeakReference;
-import java.util.List;
 
 /**
  * Created by laewoong on 2018. 4. 26..
  */
 
-public abstract class ResponseFragment<T> extends Fragment implements SearchContract.View {
+public abstract class ResponseFragment<T> extends Fragment {
 
     protected RecyclerView mRecyclerView;
     protected ResponseListAdapter mAdapter;
@@ -53,46 +46,6 @@ public abstract class ResponseFragment<T> extends Fragment implements SearchCont
         super.onActivityCreated(savedInstanceState);
 
         //mAdapter.setItem(getResponseList());
-    }
-
-    @Override
-    public void handleEmptyQueryResult() {
-
-        //mAdapter.clearItem();
-        //mAdapter.notifyDataSetChanged();
-
-        //String message = String.format(getString(R.string.guide_empty_query_response), mController.getQuery());
-
-        //Util.showToastShort(getContext(), message);
-    }
-
-    @Override
-    public void updateQueryResult() {
-
-        //mAdapter.setQuery(mController.getQuery());
-        //mAdapter.setItem(getResponseList());
-        mAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void handleFinalQueryResult() {
-
-        mAdapter.setInfinityScroll(false);
-        Util.showToastLong(getContext(), getString(R.string.guide_final_query_response));
-    }
-
-    @Override
-    public void showErrorMessage(String errorMessage) {
-
-        Util.showToastShort(getContext(), errorMessage);
-    }
-
-    @Override
-    public void clearQueryResult() {
-        if(mAdapter != null) {
-            mAdapter.clearItem();
-            mAdapter.notifyDataSetChanged();
-        }
     }
 
     public abstract RecyclerView.LayoutManager createLayoutManager();

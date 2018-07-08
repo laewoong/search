@@ -1,8 +1,16 @@
 package com.laewoong.search.view;
 
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.Observer;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+
+import com.laewoong.search.viewmodel.SearchViewModel;
 
 import java.util.List;
 
@@ -12,9 +20,11 @@ public abstract class ResponseListAdapter<VH extends RecyclerView.ViewHolder, T>
     protected String mKeyword;
     protected Handler mUiHandler;
     protected boolean mIsInfinityScrollActive;
+    protected SearchViewModel mSearchViewModel;
 
-    public ResponseListAdapter() {
+    public ResponseListAdapter(SearchViewModel viewModel) {
 
+        mSearchViewModel = viewModel;
         mUiHandler = new Handler(Looper.getMainLooper());
         mIsInfinityScrollActive = true;
     }
@@ -51,17 +61,9 @@ public abstract class ResponseListAdapter<VH extends RecyclerView.ViewHolder, T>
         }
 
         onBindView(holder, position);
-
         if(mIsInfinityScrollActive && (position == getItemCount() - 1)) {
 
-//                if(mController != null) {
-//                    SearchContract.Controller controller = mController.get();
-//                    if(controller != null) {
-//
-//                        controller.loadMoreQueryResult();;
-//                        //TODO: add Loading bar
-//                    }
-//                }
+            mSearchViewModel.reachedEndOfList();
         }
     }
 

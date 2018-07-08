@@ -2,19 +2,16 @@ package com.laewoong.search.viewmodel;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
 import android.util.Log;
 
-import com.laewoong.search.R;
-import com.laewoong.search.model.OnQueryResponseListener;
 import com.laewoong.search.model.QueryHandler;
 import com.laewoong.search.model.response.ErrorCode;
+import com.laewoong.search.model.response.ErrorResponse;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.view.WebResponseFragment;
-
-import java.util.LinkedList;
 import java.util.List;
 
 public class SearchViewModel extends AndroidViewModel {
@@ -27,9 +24,10 @@ public class SearchViewModel extends AndroidViewModel {
     private MutableLiveData<List<WebInfo>> webInfoList;
     private MutableLiveData<List<ImageInfo>> imageInfoList;
 
-    private MutableLiveData<String> errorMessage;
-
     private MutableLiveData<Integer> selectedDetailImagePosition;
+    private MutableLiveData<Boolean> isReachedList;
+
+    private MutableLiveData<ErrorCode> errorCode;
 
     public SearchViewModel(Application application) {
 
@@ -43,71 +41,11 @@ public class SearchViewModel extends AndroidViewModel {
         query = new MutableLiveData<>();
         webInfoList = new MutableLiveData<>();
         imageInfoList = new MutableLiveData<>();
-Log.i("fff", "====[WRONG] NEW SearViewModel Create!");
-        errorMessage = new MutableLiveData<>();
         selectedDetailImagePosition = new MutableLiveData<>();
 
-        init();
-    }
+        isReachedList = new MutableLiveData<>();
 
-    private void init() {
-        queryHandler.addWebQueryResultListener(new OnQueryResponseListener() {
-            @Override
-            public void onFailNetwork() {
-                errorMessage.setValue(getApplication().getString(R.string.guide_check_network_state));
-            }
-
-            @Override
-            public void onSuccessResponse() {
-                webInfoList.setValue(queryHandler.getWebInfoList());
-            }
-
-            @Override
-            public void onErrorQueryResponse(ErrorCode errorCode) {
-                final String message = (errorCode == ErrorCode.NAVER_MAX_START_VALUE_POLICY) ? getApplication().getString(R.string.guide_naver_max_start_value_policy) : getApplication().getString(R.string.guide_internal_error);
-                errorMessage.setValue(message);
-            }
-
-            @Override
-            public void onEmptyResponse() {
-                //mWebResponseFragment.handleEmptyQueryResult();
-            }
-
-            @Override
-            public void onFinalResponse() {
-                // TODO handleFinalQueryResult()
-                errorMessage.setValue(getApplication().getString(R.string.guide_final_query_response));
-            }
-        });
-
-        queryHandler.addImageQueryResultListener(new OnQueryResponseListener() {
-            @Override
-            public void onFailNetwork() {
-                errorMessage.setValue(getApplication().getString(R.string.guide_check_network_state));
-            }
-
-            @Override
-            public void onSuccessResponse() {
-                imageInfoList.setValue(queryHandler.getImageInfoList());
-            }
-
-            @Override
-            public void onErrorQueryResponse(ErrorCode errorCode) {
-                final String message = (errorCode == ErrorCode.NAVER_MAX_START_VALUE_POLICY) ? getApplication().getString(R.string.guide_naver_max_start_value_policy) : getApplication().getString(R.string.guide_internal_error);
-                errorMessage.setValue(message);
-            }
-
-            @Override
-            public void onEmptyResponse() {
-
-            }
-
-            @Override
-            public void onFinalResponse() {
-                // TODO handleFinalQueryResult()
-                errorMessage.setValue(getApplication().getString(R.string.guide_final_query_response));
-            }
-        });
+        errorCode = new MutableLiveData<>();
     }
 
     public MutableLiveData<String> getCurFragmentTag() {
@@ -126,19 +64,75 @@ Log.i("fff", "====[WRONG] NEW SearViewModel Create!");
         return imageInfoList;
     }
 
-    public MutableLiveData<String> getErrorMessage() {
-        return errorMessage;
+    public void queryWeb(String query) {
+        queryHandler.queryWeb(query)
+                    .subscribe(response -> {
+                        webInfoList.setValue(response);
+                    },
+                    error -> {
+                        if(error instanceof ErrorResponse) {
+                            ErrorResponse response = (ErrorResponse)error;
+                            errorCode.setValue(ErrorCode.valueOf(response.errorCode));
+                        }
+                    });
     }
 
-    public void queryWeb(String query) {
-        queryHandler.queryWeb(query);
+    public void queryWebMore() {
+        queryHandler.queryWebMore()
+                    .subscribe(response -> {
+                                webInfoList.getValue().addAll(response);
+                                webInfoList.setValue(webInfoList.getValue());
+                            },
+                            error -> {
+                                if(error instanceof ErrorResponse) {
+                                    ErrorResponse response = (ErrorResponse)error;
+                                    errorCode.setValue(ErrorCode.valueOf(response.errorCode));
+                                }
+                            });
     }
 
     public void queryImage(String query) {
-        queryHandler.queryImage(query);
+        queryHandler.queryImage(query)
+                .subscribe(response -> {
+                            imageInfoList.setValue(response);
+                        },
+                        error -> {
+                            if(error instanceof ErrorResponse) {
+                                ErrorResponse response = (ErrorResponse)error;
+                                errorCode.setValue(ErrorCode.valueOf(response.errorCode));
+                            }
+                        });
+    }
+
+    public void queryImageMore() {
+        queryHandler.queryImageMore()
+                .subscribe(response -> {
+                            imageInfoList.getValue().addAll(response);
+                            imageInfoList.setValue(imageInfoList.getValue());
+                        },
+                        error -> {
+                            if(error instanceof ErrorResponse) {
+                                if(error instanceof ErrorResponse) {
+                                    ErrorResponse response = (ErrorResponse)error;
+                                    errorCode.setValue(ErrorCode.valueOf(response.errorCode));
+                                }
+                            }
+                        });
     }
 
     public MutableLiveData<Integer> getSelectedDetailImagePosition() {
         return selectedDetailImagePosition;
+    }
+
+    public void reachedEndOfList() {
+        isReachedList.setValue(true);
+    }
+
+    public LiveData<Boolean> getStatusOfReachingEndOfList() {
+        return isReachedList;
+    }
+
+    public LiveData<ErrorCode> getErrorCode() {
+        return errorCode;
     }
 }

@@ -14,6 +14,11 @@ public enum ErrorCode {
     SE05("SE05"), // Invalid search api (존재하지 않는 검색 api 입니다.)
     SE99("SE99"), // System Error (시스템 에러)
 
+    FAIL_NETWORK("FAIL_NETWORK"),
+    ARRIVED_FINAL_RESPONSE("ARRIVED_FINAL_RESPONSE"),
+    ARRIVED_EMPTY_RESPONSE("ARRIVED_EMPTY_RESPONSE"),
+
+
     /**
      * 시스템 에러가 아니라, 네이버 API 정책상 제한된 요청일 경우 아래 에러 코드를 전달하여 구체적인 예외처리 기회 제공
      */

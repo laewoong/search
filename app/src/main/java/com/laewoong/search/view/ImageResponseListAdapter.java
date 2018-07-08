@@ -1,5 +1,6 @@
 package com.laewoong.search.view;
 
+import android.arch.lifecycle.LifecycleOwner;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import com.laewoong.search.R;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.util.Util;
+import com.laewoong.search.viewmodel.SearchViewModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -30,7 +32,8 @@ public class ImageResponseListAdapter extends ResponseListAdapter<ImageResponseL
         }
     }
 
-    public ImageResponseListAdapter(Context context) {
+    public ImageResponseListAdapter(Context context, SearchViewModel viewModel) {
+        super(viewModel);
         mContext = context;
     }
 

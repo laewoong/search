@@ -5,6 +5,7 @@ import com.laewoong.search.model.response.QueryResponseWeb;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -26,7 +27,7 @@ public interface NaverOpenAPIService {
     })
 
     @GET("webkr.json")
-    Flowable<Response<QueryResponseWeb>> queryWeb(
+    Single<Response<QueryResponseWeb>> queryWeb(
             @Query("query") String query,
             @Query("start") int start,
             @Query("display") int display);
@@ -38,7 +39,7 @@ public interface NaverOpenAPIService {
     })
 
     @GET("image.json")
-    Flowable<Response<QueryResponseImage>> queryImage(
+    Single<Response<QueryResponseImage>> queryImage(
             @Query("query") String query,
             @Query("start") int start,
             @Query("display") int display,

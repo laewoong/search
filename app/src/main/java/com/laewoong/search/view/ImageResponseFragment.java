@@ -31,10 +31,17 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
         super.onCreate(savedInstanceState);
 
         searchViewModel = ViewModelProviders.of(getActivity()).get(SearchViewModel.class);
+
+        observeViewModel();
+    }
+
+    private void observeViewModel() {
+
         searchViewModel.getQuery().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String query) {
                 searchViewModel.queryImage(query);
+                mRecyclerView.scrollToPosition(0);
             }
         });
 
@@ -44,15 +51,15 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
 
                 mAdapter.setItem(imageInfos);
                 mAdapter.notifyDataSetChanged();
-                mRecyclerView.scrollToPosition(0);
             }
         });
 
-        searchViewModel.getErrorMessage().observe(this, new Observer<String>() {
+        searchViewModel.getStatusOfReachingEndOfList().observe(this, new Observer<Boolean>() {
             @Override
-            public void onChanged(@Nullable String message) {
-
-                showErrorMessage(message);
+            public void onChanged(@Nullable Boolean isReachedEndOfList) {
+                if(isReachedEndOfList) {
+                    searchViewModel.queryImageMore();
+                }
             }
         });
     }
@@ -76,7 +83,7 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
     @Override
     public ResponseListAdapter createResponseListAdapter() {
 
-        ImageResponseListAdapter apdater = new ImageResponseListAdapter(getContext().getApplicationContext());
+        ImageResponseListAdapter apdater = new ImageResponseListAdapter(getContext().getApplicationContext(), searchViewModel);
         apdater.setOnSelectedItemListener(this);
         return apdater;
     }
@@ -97,12 +104,6 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
 
                 mDetailImageFragment = new DetailImageFragment();
             }
-
-//            if(mDetailImageFragment.isAdded())
-//            {
-//                //fm.beginTransaction().show(mDetailImageFragment);
-//                return; //or return false/true, based on where you are calling from
-//            }
 
             Bundle b = new Bundle();
             b.putInt(DetailImageFragment.KEY_POSITION, position);

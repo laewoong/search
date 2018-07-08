@@ -9,7 +9,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +20,6 @@ import android.widget.ProgressBar;
 import com.bogdwellers.pinchtozoom.ImageMatrixTouchHandler;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.R;
-import com.laewoong.search.SearchContract;
 import com.laewoong.search.util.Util;
 import com.laewoong.search.viewmodel.SearchViewModel;
 import com.squareup.picasso.Callback;
@@ -63,13 +61,6 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
             }
         });
 
-        searchViewModel.getErrorMessage().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String message) {
-                showErrorMessage(message);
-            }
-        });
-
         searchViewModel.getSelectedDetailImagePosition().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(@Nullable Integer position) {
@@ -94,7 +85,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
         mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new DetailImageListAdapter(getContext());
+        mAdapter = new DetailImageListAdapter(getContext(), searchViewModel);
         mRecyclerView.setAdapter(mAdapter);
 
         mSnapHelper = new PagerSnapHelper();
@@ -180,7 +171,7 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
 
     @Override
     public ResponseListAdapter createResponseListAdapter() {
-        return new DetailImageListAdapter(getContext());
+        return new DetailImageListAdapter(getContext(), searchViewModel);
     }
 
     private void setButtonVisibleState() {
@@ -222,7 +213,8 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
             }
         }
 
-        public DetailImageListAdapter(Context context) {
+        public DetailImageListAdapter(Context context, SearchViewModel viewModel) {
+            super(viewModel);
             this.mContext = context;
         }
 
