@@ -53,13 +53,13 @@ public class DetailImageFragment extends ResponseFragment<ImageInfo> {
 
         searchViewModel = ViewModelProviders.of(getActivity()).get(SearchViewModel.class);
 
-        searchViewModel.getImageInfoList().observe(this, new Observer<List<ImageInfo>>() {
-            @Override
-            public void onChanged(@Nullable List<ImageInfo> imageInfos) {
-                mAdapter.setItem(imageInfos);
-                mAdapter.notifyDataSetChanged();
-            }
-        });
+//        searchViewModel.getImageInfoList().observe(this, new Observer<List<ImageInfo>>() {
+//            @Override
+//            public void onChanged(@Nullable List<ImageInfo> imageInfos) {
+//                mAdapter.setItem(imageInfos);
+//                mAdapter.notifyDataSetChanged();
+//            }
+//        });
 
         searchViewModel.getSelectedDetailImagePosition().observe(this, new Observer<Integer>() {
             @Override

@@ -6,26 +6,30 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.widget.Toast;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.laewoong.search.R;
-import com.laewoong.search.model.response.ErrorCode;
 import com.laewoong.search.util.BackPressCloseHandler;
+import com.laewoong.search.util.NetworkState;
 import com.laewoong.search.viewmodel.SearchViewModel;
 import info.hoang8f.android.segmented.SegmentedGroup;
 import io.reactivex.Observable;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnSelectedItemListener {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
     private SearchView  mSearchView;
     private BackPressCloseHandler mBackPressCloseHandler;
     private SearchViewModel searchViewModel;
+    private RecyclerView queryResponseRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,33 +39,10 @@ public class MainActivity extends AppCompatActivity {
         mSearchView = (SearchView)findViewById(R.id.searchview_query);
         mBackPressCloseHandler = new BackPressCloseHandler(this);
         searchViewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
+        queryResponseRecyclerView = (RecyclerView)findViewById(R.id.recyclerview_query_response);
 
         init();
     }
-
-    private void setCurFragment(final String tag) {
-
-        Fragment fragment = null;
-        if(tag.equals(WebResponseFragment.TAG)) {
-            fragment = getSupportFragmentManager().findFragmentByTag(WebResponseFragment.TAG);
-            if(fragment == null) {
-                fragment = new WebResponseFragment();
-            }
-        }
-        else if(tag.equals(ImageResponseFragment.TAG)) {
-            fragment = getSupportFragmentManager().findFragmentByTag(ImageResponseFragment.TAG);
-            if(fragment == null) {
-                fragment = new ImageResponseFragment();
-            }
-        }
-
-        if(fragment == null) {
-            return;
-        }
-
-        getSupportFragmentManager().beginTransaction().replace(R.id.container_fragment, fragment, tag).commit();
-    }
-
 
     private void init() {
 
@@ -77,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 mSearchView.clearFocus();
-                searchViewModel.getQuery().setValue(query);
+                searchViewModel.selectedTabButton(searchViewModel.getCurSelectedTab().getValue());
 
                 return false;
             }
@@ -94,65 +75,105 @@ public class MainActivity extends AppCompatActivity {
         mSearchView.setSubmitButtonEnabled(true);
         mSearchView.setQueryRefinementEnabled(true);
 
-        Observable<String> webButtonObservable = RxView.clicks(findViewById(R.id.button_web))
-                .map(event -> WebResponseFragment.TAG);
+        queryResponseRecyclerView.getRecycledViewPool().setMaxRecycledViews(0, 0);
+        queryResponseRecyclerView.setHasFixedSize(true);
 
-        Observable<String> imageButtonObservale = RxView.clicks(findViewById(R.id.button_image))
-                .map(event -> ImageResponseFragment.TAG);
+        searchViewModel.getCurSelectedTab().observe(this, tab -> {
+
+            String query = mSearchView.getQuery().toString();
+
+            switch (tab) {
+                case WEB:
+                    queryResponseRecyclerView.setAdapter(new WebResponsePagedListAdapter());
+                    queryResponseRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+                    if((query != null) && (query.isEmpty() == false)) {
+                        searchViewModel.queryWeb(query);
+                    }
+                break;
+                case IMAGE:
+                    ImageResponsePagedListAdapter adapter = new ImageResponsePagedListAdapter(getApplicationContext());
+                    adapter.setOnSelectedItemListener(this);
+                    queryResponseRecyclerView.setAdapter(adapter);
+                    queryResponseRecyclerView.setLayoutManager(new GridLayoutManager(this, ViewConstants.DEFAULT_GRID_SPAN_COUNT));
+
+                    if((query != null) && (query.isEmpty() == false)) {
+                        searchViewModel.queryImage(query);
+                    }
+                    break;
+            }
+        });
+
+        Observable<ViewConstants.TAB> webButtonObservable = RxView.clicks(findViewById(R.id.button_web))
+                .map(event -> ViewConstants.TAB.WEB);
+
+        Observable<ViewConstants.TAB> imageButtonObservale = RxView.clicks(findViewById(R.id.button_image))
+                .map(event -> ViewConstants.TAB.IMAGE);
 
         Observable.merge(webButtonObservable, imageButtonObservale)
-                .subscribe(TAG -> {
-                    searchViewModel.getCurFragmentTag().setValue(TAG);
+                .subscribe(tab -> {
+                    mSearchView.clearFocus();
+                    searchViewModel.selectedTabButton(tab);
                 });
 
         // Init tab view's hint color
         SegmentedGroup tabGroup = (SegmentedGroup)findViewById(R.id.container_tab);
         tabGroup.setTintColor(Color.parseColor("#F06292"));
 
-        searchViewModel.getCurFragmentTag().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String fragmentTag) {
-
-                setCurFragment(fragmentTag);
-
-                mSearchView.clearFocus();
-            }
-        });
-
-        searchViewModel.getErrorCode().observe(this, new Observer<ErrorCode>() {
+        searchViewModel.getNetworkState().observe(this, new Observer<NetworkState>() {
                 @Override
-                public void onChanged(@Nullable ErrorCode errorCode) {
+                public void onChanged(@Nullable NetworkState networkState) {
 
-                    String message;
-
-                    switch (errorCode) {
-                        case NAVER_MAX_START_VALUE_POLICY:
-                            message = getApplication().getString(R.string.guide_naver_max_start_value_policy);
-                            break;
-                        case FAIL_NETWORK:
-                            message = getApplication().getString(R.string.guide_check_network_state);
-                            break;
-                        case ARRIVED_FINAL_RESPONSE:
-                            message = getApplication().getString(R.string.guide_final_query_response);
-                            break;
-                        case ARRIVED_EMPTY_RESPONSE:
-                            message = String.format(getString(R.string.guide_empty_query_response), searchViewModel.getQuery().getValue());
-                            break;
-                        default:
-                            message = getApplication().getString(R.string.guide_internal_error);
-                    }
-
-                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, networkState.getMsg(), Toast.LENGTH_SHORT).show();
                 }
             });
+
+        searchViewModel.getWebInfoList().observe(this, pagedList -> {
+
+            if(searchViewModel.getCurSelectedTab().getValue() != ViewConstants.TAB.WEB) {
+                return;
+            }
+
+            ((WebResponsePagedListAdapter)(queryResponseRecyclerView.getAdapter())).submitList(pagedList);
+        });
+
+        searchViewModel.getImageInfoList().observe(this, pagedList -> {
+
+            if(searchViewModel.getCurSelectedTab().getValue() != ViewConstants.TAB.IMAGE) {
+                return;
+            }
+
+            ((ImageResponsePagedListAdapter)(queryResponseRecyclerView.getAdapter())).submitList(pagedList);
+        });
     }
 
     @Override
     public void onBackPressed() {
+
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
         } else {
             mBackPressCloseHandler.onBackPressed();
         }
+    }
+
+    @Override
+    public void onSelectedItem(int position) {
+
+        searchViewModel.getSelectedDetailImagePosition().setValue(position);
+
+        FragmentManager fm = getSupportFragmentManager();
+        DetailImageFragment mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
+
+        if (mDetailImageFragment == null) {
+
+            mDetailImageFragment = new DetailImageFragment();
+        }
+
+        Bundle b = new Bundle();
+        b.putInt(DetailImageFragment.KEY_POSITION, position);
+        mDetailImageFragment.setArguments(b);
+
+        fm.beginTransaction().add(R.id.container_root, mDetailImageFragment, DetailImageFragment.TAG).addToBackStack(null).commit();
     }
 }

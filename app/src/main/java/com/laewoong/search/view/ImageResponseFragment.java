@@ -2,6 +2,7 @@ package com.laewoong.search.view;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.arch.paging.PagedList;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
@@ -45,23 +46,6 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
             }
         });
 
-        searchViewModel.getImageInfoList().observe(this, new Observer<List<ImageInfo>>() {
-            @Override
-            public void onChanged(@Nullable List<ImageInfo> imageInfos) {
-
-                mAdapter.setItem(imageInfos);
-                mAdapter.notifyDataSetChanged();
-            }
-        });
-
-        searchViewModel.getStatusOfReachingEndOfList().observe(this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean isReachedEndOfList) {
-                if(isReachedEndOfList) {
-                    searchViewModel.queryImageMore();
-                }
-            }
-        });
     }
 
     @Override

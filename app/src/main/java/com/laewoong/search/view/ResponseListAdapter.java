@@ -63,7 +63,7 @@ public abstract class ResponseListAdapter<VH extends RecyclerView.ViewHolder, T>
         onBindView(holder, position);
         if(mIsInfinityScrollActive && (position == getItemCount() - 1)) {
 
-            mSearchViewModel.reachedEndOfList();
+            //mSearchViewModel.reachedEndOfList();
         }
     }
 

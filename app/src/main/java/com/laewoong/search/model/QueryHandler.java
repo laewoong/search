@@ -1,6 +1,7 @@
 package com.laewoong.search.model;
 
 import android.arch.lifecycle.LifecycleOwner;
+import android.arch.paging.PagedList;
 import android.content.Context;
 import android.util.Log;
 

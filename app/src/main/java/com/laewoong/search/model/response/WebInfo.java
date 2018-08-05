@@ -1,5 +1,8 @@
 package com.laewoong.search.model.response;
 
+import android.support.annotation.NonNull;
+import android.support.v7.util.DiffUtil;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -42,5 +45,26 @@ public class WebInfo implements java.io.Serializable{
     @Override
     public String toString() {
         return "title : " + title + ", link : " + link + ", description : " + description + "\n";
+    }
+
+    public static DiffUtil.ItemCallback<WebInfo> DIFF_CALLBACK = new DiffUtil.ItemCallback<WebInfo>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull WebInfo oldItem, @NonNull WebInfo newItem) {
+            return oldItem.equals(newItem);
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull WebInfo oldItem, @NonNull WebInfo newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        WebInfo info = (WebInfo) obj;
+        return info.link.equals(this.link);
     }
 }

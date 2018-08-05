@@ -7,4 +7,9 @@ package com.laewoong.search.view;
 public class ViewConstants {
 
     public static final int DEFAULT_GRID_SPAN_COUNT = 2;
+
+    public static enum TAB {
+       WEB,
+       IMAGE,
+    }
 }

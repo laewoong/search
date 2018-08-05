@@ -1,5 +1,8 @@
 package com.laewoong.search.model.response;
 
+import android.support.annotation.NonNull;
+import android.support.v7.util.DiffUtil;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -62,5 +65,26 @@ public class ImageInfo implements java.io.Serializable{
     public String toString() {
         return "title : " + title + ", link : " + link + ", thumbnail : " + thumbnail +
                 ", sizeheight : " + sizeheight + ", sizewidth : " + sizewidth + "\n";
+    }
+
+    public static DiffUtil.ItemCallback<ImageInfo> DIFF_CALLBACK = new DiffUtil.ItemCallback<ImageInfo>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull ImageInfo oldItem, @NonNull ImageInfo newItem) {
+            return oldItem.equals(newItem);
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull ImageInfo oldItem, @NonNull ImageInfo newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        ImageInfo info = (ImageInfo) obj;
+        return info.link.equals(this.link);
     }
 }
