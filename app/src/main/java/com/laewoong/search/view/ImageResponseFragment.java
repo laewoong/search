@@ -75,7 +75,7 @@ public class ImageResponseFragment extends ResponseFragment<ImageInfo> implement
     @Override
     public void onSelectedItem(int position) {
 
-        searchViewModel.getSelectedDetailImagePosition().setValue(position);
+        //searchViewModel.getSelectedDetailImagePosition().setValue(position);
 
         final FragmentActivity activity = getActivity();
 

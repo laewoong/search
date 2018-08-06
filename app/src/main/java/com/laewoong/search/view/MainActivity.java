@@ -22,7 +22,7 @@ import com.laewoong.search.viewmodel.SearchViewModel;
 import info.hoang8f.android.segmented.SegmentedGroup;
 import io.reactivex.Observable;
 
-public class MainActivity extends AppCompatActivity implements OnSelectedItemListener {
+public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
@@ -42,6 +42,103 @@ public class MainActivity extends AppCompatActivity implements OnSelectedItemLis
         queryResponseRecyclerView = (RecyclerView)findViewById(R.id.recyclerview_query_response);
 
         init();
+        observeLiveData();
+    }
+
+    private void observeLiveData() {
+
+        searchViewModel.getQuery().observe(this, query -> {
+
+            if((query == null) || query.isEmpty()) {
+
+                return;
+            }
+
+            switch( searchViewModel.getCurSelectedTab().getValue() ) {
+                case WEB:
+                    searchViewModel.queryWeb(query);
+                    break;
+                case IMAGE:
+                    searchViewModel.queryImage(query);
+                    break;
+            }
+        });
+
+        searchViewModel.getCurSelectedTab().observe(this, tab -> {
+
+            String query = mSearchView.getQuery().toString();
+
+            switch (tab) {
+                case WEB:
+                    queryResponseRecyclerView.setAdapter(new WebResponsePagedListAdapter());
+                    queryResponseRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+                    if((query != null) && (query.isEmpty() == false)) {
+                        searchViewModel.queryWeb(query);
+                    }
+                    break;
+                case IMAGE:
+                    ImageResponsePagedListAdapter adapter = new ImageResponsePagedListAdapter(getApplicationContext(), searchViewModel);
+                    queryResponseRecyclerView.setAdapter(adapter);
+                    queryResponseRecyclerView.setLayoutManager(new GridLayoutManager(this, ViewConstants.DEFAULT_GRID_SPAN_COUNT));
+
+                    if((query != null) && (query.isEmpty() == false)) {
+                        searchViewModel.queryImage(query);
+                    }
+                    break;
+            }
+        });
+
+        searchViewModel.getNetworkState().observe(this, new Observer<NetworkState>() {
+            @Override
+            public void onChanged(@Nullable NetworkState networkState) {
+
+                if (networkState.getStatus() == NetworkState.Status.FAILED) {
+                    Toast.makeText(MainActivity.this, networkState.getMsg(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        searchViewModel.getWebInfoList().observe(this, pagedList -> {
+
+            if(searchViewModel.getCurSelectedTab().getValue() != ViewConstants.TAB.WEB) {
+                return;
+            }
+
+            ((WebResponsePagedListAdapter)(queryResponseRecyclerView.getAdapter())).submitList(pagedList);
+        });
+
+        searchViewModel.getImageInfoList().observe(this, pagedList -> {
+
+            if(searchViewModel.getCurSelectedTab().getValue() != ViewConstants.TAB.IMAGE) {
+                return;
+            }
+
+            ((ImageResponsePagedListAdapter)(queryResponseRecyclerView.getAdapter())).submitList(pagedList);
+        });
+
+        searchViewModel.getSelectedDetailImagePosition().observe(this, new Observer<Integer>() {
+            @Override
+            public void onChanged(@Nullable Integer position) {
+
+                FragmentManager fm = getSupportFragmentManager();
+                DetailImageFragment mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
+
+                if (mDetailImageFragment == null) {
+
+                    mDetailImageFragment = new DetailImageFragment();
+                }
+                else if(mDetailImageFragment.isAdded()){
+                    return;
+                }
+
+                Bundle b = new Bundle();
+                b.putInt(DetailImageFragment.KEY_POSITION, position);
+                mDetailImageFragment.setArguments(b);
+
+                fm.beginTransaction().add(R.id.container_root, mDetailImageFragment, DetailImageFragment.TAG).addToBackStack(null).commit();
+            }
+        });
     }
 
     private void init() {
@@ -58,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements OnSelectedItemLis
                 }
 
                 mSearchView.clearFocus();
-                searchViewModel.selectedTabButton(searchViewModel.getCurSelectedTab().getValue());
+                searchViewModel.updatedQuery(query);
 
                 return false;
             }
@@ -78,32 +175,6 @@ public class MainActivity extends AppCompatActivity implements OnSelectedItemLis
         queryResponseRecyclerView.getRecycledViewPool().setMaxRecycledViews(0, 0);
         queryResponseRecyclerView.setHasFixedSize(true);
 
-        searchViewModel.getCurSelectedTab().observe(this, tab -> {
-
-            String query = mSearchView.getQuery().toString();
-
-            switch (tab) {
-                case WEB:
-                    queryResponseRecyclerView.setAdapter(new WebResponsePagedListAdapter());
-                    queryResponseRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-                    if((query != null) && (query.isEmpty() == false)) {
-                        searchViewModel.queryWeb(query);
-                    }
-                break;
-                case IMAGE:
-                    ImageResponsePagedListAdapter adapter = new ImageResponsePagedListAdapter(getApplicationContext());
-                    adapter.setOnSelectedItemListener(this);
-                    queryResponseRecyclerView.setAdapter(adapter);
-                    queryResponseRecyclerView.setLayoutManager(new GridLayoutManager(this, ViewConstants.DEFAULT_GRID_SPAN_COUNT));
-
-                    if((query != null) && (query.isEmpty() == false)) {
-                        searchViewModel.queryImage(query);
-                    }
-                    break;
-            }
-        });
-
         Observable<ViewConstants.TAB> webButtonObservable = RxView.clicks(findViewById(R.id.button_web))
                 .map(event -> ViewConstants.TAB.WEB);
 
@@ -119,32 +190,6 @@ public class MainActivity extends AppCompatActivity implements OnSelectedItemLis
         // Init tab view's hint color
         SegmentedGroup tabGroup = (SegmentedGroup)findViewById(R.id.container_tab);
         tabGroup.setTintColor(Color.parseColor("#F06292"));
-
-        searchViewModel.getNetworkState().observe(this, new Observer<NetworkState>() {
-                @Override
-                public void onChanged(@Nullable NetworkState networkState) {
-
-                    Toast.makeText(MainActivity.this, networkState.getMsg(), Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        searchViewModel.getWebInfoList().observe(this, pagedList -> {
-
-            if(searchViewModel.getCurSelectedTab().getValue() != ViewConstants.TAB.WEB) {
-                return;
-            }
-
-            ((WebResponsePagedListAdapter)(queryResponseRecyclerView.getAdapter())).submitList(pagedList);
-        });
-
-        searchViewModel.getImageInfoList().observe(this, pagedList -> {
-
-            if(searchViewModel.getCurSelectedTab().getValue() != ViewConstants.TAB.IMAGE) {
-                return;
-            }
-
-            ((ImageResponsePagedListAdapter)(queryResponseRecyclerView.getAdapter())).submitList(pagedList);
-        });
     }
 
     @Override
@@ -155,25 +200,5 @@ public class MainActivity extends AppCompatActivity implements OnSelectedItemLis
         } else {
             mBackPressCloseHandler.onBackPressed();
         }
-    }
-
-    @Override
-    public void onSelectedItem(int position) {
-
-        searchViewModel.getSelectedDetailImagePosition().setValue(position);
-
-        FragmentManager fm = getSupportFragmentManager();
-        DetailImageFragment mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
-
-        if (mDetailImageFragment == null) {
-
-            mDetailImageFragment = new DetailImageFragment();
-        }
-
-        Bundle b = new Bundle();
-        b.putInt(DetailImageFragment.KEY_POSITION, position);
-        mDetailImageFragment.setArguments(b);
-
-        fm.beginTransaction().add(R.id.container_root, mDetailImageFragment, DetailImageFragment.TAG).addToBackStack(null).commit();
     }
 }

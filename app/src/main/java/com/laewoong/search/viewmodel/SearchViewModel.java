@@ -111,6 +111,10 @@ public class SearchViewModel extends AndroidViewModel {
         return query;
     }
 
+    public void updatedQuery(final String newQuery) {
+        this.query.setValue(newQuery);
+    }
+
     public LiveData<PagedList<WebInfo>> getWebInfoList() {
         return webInfoList;
     }
@@ -131,8 +135,12 @@ public class SearchViewModel extends AndroidViewModel {
         imageResponseDataFactory.getImagebResponseDataSourceLiveData().getValue().invalidate();
     }
 
-    public MutableLiveData<Integer> getSelectedDetailImagePosition() {
+    public LiveData<Integer> getSelectedDetailImagePosition() {
         return selectedDetailImagePosition;
+    }
+
+    public void selectedDetailImagePosition(int position) {
+        selectedDetailImagePosition.setValue(position);
     }
 
     public LiveData<ViewConstants.TAB> getCurSelectedTab() {
