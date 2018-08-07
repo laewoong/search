@@ -115,6 +115,18 @@ public class SearchViewModel extends AndroidViewModel {
         this.query.setValue(newQuery);
     }
 
+    public void invalidateQuery() {
+
+        switch(curSelectedTab.getValue()) {
+            case WEB:
+                webResponseDataFactory.getWebResponseDataSourceLiveData().getValue().invalidate();
+                break;
+            case IMAGE:
+                imageResponseDataFactory.getImagebResponseDataSourceLiveData().getValue().invalidate();
+                break;
+        }
+    }
+
     public LiveData<PagedList<WebInfo>> getWebInfoList() {
         return webInfoList;
     }
