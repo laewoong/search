@@ -10,6 +10,9 @@ import android.arch.paging.PagedList;
 import android.util.Log;
 
 import com.laewoong.search.controller.SearchApplication;
+import com.laewoong.search.di.DaggerRepositoryComponent;
+import com.laewoong.search.di.RepositoryComponent;
+import com.laewoong.search.di.RepositoryModule;
 import com.laewoong.search.model.ImageResponseDataFactory;
 import com.laewoong.search.model.ModelConstants;
 import com.laewoong.search.model.NaverOpenAPIService;
@@ -35,9 +38,7 @@ public class SearchViewModel extends AndroidViewModel {
     private LiveData<PagedList<ImageInfo>> imageInfoList;
     private MutableLiveData<Integer> selectedDetailImagePosition;
     private MutableLiveData<ViewConstants.TAB> curSelectedTab;
-    private NaverOpenAPIService apiService;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private Executor executor;
+    private CompositeDisposable compositeDisposable;
     private LiveData<NetworkState> networkState;
     private WebResponseDataFactory webResponseDataFactory;
     private ImageResponseDataFactory imageResponseDataFactory;
@@ -50,51 +51,22 @@ public class SearchViewModel extends AndroidViewModel {
         imageInfoList = new MutableLiveData<>();
         selectedDetailImagePosition = new MutableLiveData<>();
 
-        executor = Executors.newFixedThreadPool(5);
-        apiService = ((SearchApplication)getApplication()).getApiService();
-        initWebResponsePagedList();
-        initImageResponsePagedList();
+        RepositoryComponent repositoryComponent = DaggerRepositoryComponent.builder()
+                .repositoryModule(new RepositoryModule(getApplication()))
+                .build();
+        webResponseDataFactory = repositoryComponent.webResponseDataFactory();
+        imageResponseDataFactory = repositoryComponent.imageResponseDataFactory();
+        compositeDisposable = repositoryComponent.compositeDisposable();
 
-        curSelectedTab = new MutableLiveData<>();
-        curSelectedTab.setValue(ViewConstants.TAB.WEB);
-    }
+        webInfoList = repositoryComponent.webInfoList();
+        imageInfoList = repositoryComponent.imageInfoList();
 
-    private void initWebResponsePagedList() {
-
-        webResponseDataFactory = new WebResponseDataFactory(getApplication(), apiService, compositeDisposable);
+        //TODO: concat web with image.
         networkState = Transformations.switchMap(webResponseDataFactory.getWebResponseDataSourceLiveData(),
                 dataSource -> dataSource.getNetworkState());
 
-        PagedList.Config pagedListConfig =
-                (new PagedList.Config.Builder())
-                        .setEnablePlaceholders(false)
-                        .setInitialLoadSizeHint(ModelConstants.DEFAULT_WEB_DISPALY)
-                        .setPageSize(ModelConstants.DEFAULT_WEB_DISPALY)
-                        .build();
-
-        webInfoList = (new LivePagedListBuilder(webResponseDataFactory, pagedListConfig))
-                .setFetchExecutor(executor)
-                .build();
-    }
-
-    private void initImageResponsePagedList() {
-
-        imageResponseDataFactory = new ImageResponseDataFactory(getApplication(), apiService, compositeDisposable);
-
-        //TODO: concat web with image.
-//        networkState = Transformations.switchMap(imageResponseDataFactory.getImagebResponseDataSourceLiveData(),
-//                dataSource -> dataSource.getNetworkState());
-
-        PagedList.Config pagedListConfig =
-                (new PagedList.Config.Builder())
-                        .setEnablePlaceholders(false)
-                        .setInitialLoadSizeHint(ModelConstants.DEFAULT_IMAGE_DISPALY)
-                        .setPageSize(ModelConstants.DEFAULT_IMAGE_DISPALY)
-                        .build();
-
-        imageInfoList = (new LivePagedListBuilder(imageResponseDataFactory, pagedListConfig))
-                .setFetchExecutor(executor)
-                .build();
+        curSelectedTab = new MutableLiveData<>();
+        curSelectedTab.setValue(ViewConstants.TAB.WEB);
     }
 
     public LiveData<NetworkState> getNetworkState() {

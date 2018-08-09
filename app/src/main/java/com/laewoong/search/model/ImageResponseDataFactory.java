@@ -6,8 +6,12 @@ import android.arch.paging.DataSource;
 import android.content.Context;
 import android.util.Log;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import io.reactivex.disposables.CompositeDisposable;
 
+@Singleton
 public class ImageResponseDataFactory extends DataSource.Factory {
 
     private Context context;
@@ -17,6 +21,7 @@ public class ImageResponseDataFactory extends DataSource.Factory {
     private MutableLiveData<ImageResponseDataSource> imageResponseDataSourceLiveData;
     private String query;
 
+    @Inject
     public ImageResponseDataFactory(Context context, NaverOpenAPIService apiService, CompositeDisposable compositeDisposable) {
         this.context = context;
         this.apiService = apiService;
