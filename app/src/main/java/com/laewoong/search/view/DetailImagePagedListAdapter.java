@@ -13,7 +13,6 @@ import com.bogdwellers.pinchtozoom.ImageMatrixTouchHandler;
 import com.laewoong.search.R;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.util.Util;
-import com.laewoong.search.viewmodel.SearchViewModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -24,7 +23,7 @@ public class DetailImagePagedListAdapter extends PagedListAdapter<ImageInfo, Det
 
     private Context mContext;
 
-    public DetailImagePagedListAdapter(Context context, SearchViewModel viewModel) {
+    public DetailImagePagedListAdapter(Context context) {
         super(ImageInfo.DIFF_CALLBACK);
         this.mContext = context;
     }

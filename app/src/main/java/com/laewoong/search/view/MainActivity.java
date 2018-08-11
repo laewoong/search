@@ -26,7 +26,7 @@ import info.hoang8f.android.segmented.SegmentedGroup;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnSelectedItemListener {
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
@@ -69,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
 
         initAdapter();
+
+        imageResponsePagedListAdapter.setOnSelectedItemListener(this);
 
         querySubject = PublishSubject.create();
 
@@ -182,29 +184,6 @@ public class MainActivity extends AppCompatActivity {
         searchViewModel.getImageInfoList().observe(this, pagedList -> {
             imageResponsePagedListAdapter.submitList(pagedList);
         });
-
-        searchViewModel.getSelectedDetailImagePosition().observe(this, new Observer<Integer>() {
-            @Override
-            public void onChanged(@Nullable Integer position) {
-
-                FragmentManager fm = getSupportFragmentManager();
-                DetailImageFragment mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
-
-                if (mDetailImageFragment == null) {
-
-                    mDetailImageFragment = new DetailImageFragment();
-                }
-                else if(mDetailImageFragment.isAdded()){
-                    return;
-                }
-
-                Bundle b = new Bundle();
-                b.putInt(DetailImageFragment.KEY_POSITION, position);
-                mDetailImageFragment.setArguments(b);
-
-                fm.beginTransaction().add(R.id.container_root, mDetailImageFragment, DetailImageFragment.TAG).addToBackStack(null).commit();
-            }
-        });
     }
 
     @Override
@@ -215,5 +194,25 @@ public class MainActivity extends AppCompatActivity {
         } else {
             mBackPressCloseHandler.onBackPressed();
         }
+    }
+
+    @Override
+    public void onSelectedItem(int position) {
+        FragmentManager fm = getSupportFragmentManager();
+        DetailImageFragment mDetailImageFragment = (DetailImageFragment) fm.findFragmentByTag(DetailImageFragment.TAG);
+
+        if (mDetailImageFragment == null) {
+
+            mDetailImageFragment = new DetailImageFragment();
+        }
+        else if(mDetailImageFragment.isAdded()){
+            return;
+        }
+
+        Bundle b = new Bundle();
+        b.putInt(DetailImageFragment.KEY_POSITION, position);
+        mDetailImageFragment.setArguments(b);
+
+        fm.beginTransaction().add(R.id.container_root, mDetailImageFragment, DetailImageFragment.TAG).addToBackStack(null).commit();
     }
 }

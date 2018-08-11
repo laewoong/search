@@ -25,7 +25,7 @@ public class SearchViewModel extends AndroidViewModel {
     //private MutableLiveData<String> query;
     private LiveData<PagedList<WebInfo>> webInfoList;
     private LiveData<PagedList<ImageInfo>> imageInfoList;
-    private MutableLiveData<Integer> selectedDetailImagePosition;
+    //private MutableLiveData<Integer> selectedDetailImagePosition;
     private MutableLiveData<ViewConstants.TAB> curSelectedTab;
     private CompositeDisposable compositeDisposable;
     private LiveData<NetworkState> networkState;
@@ -38,7 +38,7 @@ public class SearchViewModel extends AndroidViewModel {
 
         //query = new MutableLiveData<>();
         imageInfoList = new MutableLiveData<>();
-        selectedDetailImagePosition = new MutableLiveData<>();
+        //selectedDetailImagePosition = new MutableLiveData<>();
 
         RepositoryComponent repositoryComponent = DaggerRepositoryComponent.builder()
                 .contextModule(new ContextModule(getApplication()))
@@ -100,13 +100,13 @@ public class SearchViewModel extends AndroidViewModel {
         imageResponseDataFactory.getImagebResponseDataSourceLiveData().getValue().invalidate();
     }
 
-    public LiveData<Integer> getSelectedDetailImagePosition() {
-        return selectedDetailImagePosition;
-    }
-
-    public void selectedDetailImagePosition(int position) {
-        selectedDetailImagePosition.setValue(position);
-    }
+//    public LiveData<Integer> getSelectedDetailImagePosition() {
+//        return selectedDetailImagePosition;
+//    }
+//
+//    public void selectedDetailImagePosition(int position) {
+//        selectedDetailImagePosition.setValue(position);
+//    }
 
     public LiveData<ViewConstants.TAB> getCurSelectedTab() {
         return curSelectedTab;

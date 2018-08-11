@@ -24,13 +24,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 public class ImageResponsePagedListAdapter extends PagedListAdapter<ImageInfo, ImageResponsePagedListAdapter.ViewHolder> {
 
     private Context mContext;
-    //private SearchViewModel searchViewModel;
+    private OnSelectedItemListener onSelectedItemListener;
 
     @Inject
     public ImageResponsePagedListAdapter(Context context) {
         super(ImageInfo.DIFF_CALLBACK);
         this.mContext = context;
-        //this.searchViewModel = searchViewModel;
     }
 
     @Override
@@ -51,7 +50,9 @@ public class ImageResponsePagedListAdapter extends PagedListAdapter<ImageInfo, I
             @Override
             public void onClick(View view) {
 
-                //searchViewModel.selectedDetailImagePosition(position);
+                if(onSelectedItemListener != null) {
+                    onSelectedItemListener.onSelectedItem(position);
+                }
             }
         });
 
@@ -73,6 +74,10 @@ public class ImageResponsePagedListAdapter extends PagedListAdapter<ImageInfo, I
                         });
             }
         });
+    }
+
+    public void setOnSelectedItemListener(OnSelectedItemListener listener) {
+        onSelectedItemListener = listener;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
