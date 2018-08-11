@@ -2,7 +2,6 @@ package com.laewoong.search.di;
 import android.arch.lifecycle.LiveData;
 import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
-import android.content.Context;
 import com.laewoong.search.model.ImageResponseDataFactory;
 import com.laewoong.search.model.ModelConstants;
 import com.laewoong.search.model.NaverOpenAPIService;
@@ -17,14 +16,8 @@ import dagger.Module;
 import dagger.Provides;
 import io.reactivex.disposables.CompositeDisposable;
 
-@Module
+@Module(includes = {ContextModule.class})
 public class RepositoryModule {
-
-    private Context context;
-
-    public RepositoryModule(Context context) {
-        this.context = context;
-    }
 
     @Provides
     @Singleton
@@ -34,24 +27,19 @@ public class RepositoryModule {
 
     @Provides
     @Singleton
-    public CompositeDisposable provideCompositeDisposable() {
+    public static CompositeDisposable provideCompositeDisposable() {
         return new CompositeDisposable();
     }
 
     @Provides
-    public Context provideContext() {
-        return this.context;
-    }
-
-    @Provides
     @Singleton
-    public Executor provideExecutor() {
+    public static Executor provideExecutor() {
         return Executors.newFixedThreadPool(5);
     }
 
     @Provides
     @Singleton
-    public LiveData<PagedList<WebInfo>> provideWebInfoList(WebResponseDataFactory webResponseDataFactory, @Named("config_web") PagedList.Config pagedListConfig, Executor executor) {
+    public static LiveData<PagedList<WebInfo>> provideWebInfoList(WebResponseDataFactory webResponseDataFactory, @Named("config_web") PagedList.Config pagedListConfig, Executor executor) {
         return (new LivePagedListBuilder(webResponseDataFactory, pagedListConfig))
                 .setFetchExecutor(executor)
                 .build();
@@ -60,7 +48,7 @@ public class RepositoryModule {
     @Provides
     @Singleton
     @Named("config_web")
-    public PagedList.Config provideWebPagedListConfig() {
+    public static PagedList.Config provideWebPagedListConfig() {
         return (new PagedList.Config.Builder())
                         .setEnablePlaceholders(false)
                         .setInitialLoadSizeHint(ModelConstants.DEFAULT_WEB_DISPALY)
@@ -70,7 +58,7 @@ public class RepositoryModule {
 
     @Provides
     @Singleton
-    public LiveData<PagedList<ImageInfo>> provideImageInfoList(ImageResponseDataFactory imageResponseDataFactory, @Named("config_image") PagedList.Config pagedListConfig, Executor executor) {
+    public static LiveData<PagedList<ImageInfo>> provideImageInfoList(ImageResponseDataFactory imageResponseDataFactory, @Named("config_image") PagedList.Config pagedListConfig, Executor executor) {
         return (new LivePagedListBuilder(imageResponseDataFactory, pagedListConfig))
                 .setFetchExecutor(executor)
                 .build();
@@ -79,7 +67,7 @@ public class RepositoryModule {
     @Provides
     @Singleton
     @Named("config_image")
-    public PagedList.Config provideImagePagedListConfig() {
+    public static PagedList.Config provideImagePagedListConfig() {
         return (new PagedList.Config.Builder())
                 .setEnablePlaceholders(false)
                 .setInitialLoadSizeHint(ModelConstants.DEFAULT_IMAGE_DISPALY)

@@ -10,16 +10,21 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.widget.Toast;
+import com.jakewharton.rxbinding2.view.RxView;
 import com.laewoong.search.R;
 import com.laewoong.search.databinding.ActivityMainBinding;
 import com.laewoong.search.util.BackPressCloseHandler;
 import com.laewoong.search.util.NetworkState;
 import com.laewoong.search.viewmodel.SearchViewModel;
+import javax.inject.Inject;
+import javax.inject.Named;
+import dagger.android.AndroidInjection;
 import info.hoang8f.android.segmented.SegmentedGroup;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,8 +35,23 @@ public class MainActivity extends AppCompatActivity {
 
     private BackPressCloseHandler mBackPressCloseHandler;
 
+    private PublishSubject<String> querySubject;
+
+    @Inject
+    WebResponsePagedListAdapter webResponsePagedListAdapter;
+    @Inject
+    ImageResponsePagedListAdapter imageResponsePagedListAdapter;
+
+    @Inject
+    @Named("web_list_layout_manger")
+    RecyclerView.LayoutManager webResponseListLayoutManager;
+    @Inject
+    @Named("image_list_layout_manger")
+    RecyclerView.LayoutManager imageResponseListLayoutManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
 
         searchViewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
@@ -48,20 +68,52 @@ public class MainActivity extends AppCompatActivity {
 
     private void init() {
 
+        initAdapter();
+
+        querySubject = PublishSubject.create();
+
+        Observable<String> queryObservable = querySubject
+                .filter(query -> ((query != null) && (query.isEmpty() == false)))
+                .doOnNext(query -> { binding.searchviewQuery.clearFocus(); });
+
+        queryObservable.filter(notUsed -> (binding.buttonWeb.isChecked()))
+                    .subscribe(query -> {
+
+                        searchViewModel.queryWeb(query);
+                        binding.recyclerviewQueryResponse.setAdapter(webResponsePagedListAdapter);
+                        binding.recyclerviewQueryResponse.setLayoutManager(webResponseListLayoutManager);
+                    });
+
+        queryObservable.filter(notUsed -> (binding.buttonImage.isChecked()))
+                    .subscribe(query -> {
+
+                        searchViewModel.queryImage(query);
+                        binding.recyclerviewQueryResponse.setAdapter(imageResponsePagedListAdapter);
+                        binding.recyclerviewQueryResponse.setLayoutManager(imageResponseListLayoutManager);
+                    });
+
+        RxView.clicks(binding.buttonWeb)
+                .subscribe(view -> {
+                    searchViewModel.selectedTabButton(ViewConstants.TAB.WEB);
+                    querySubject.onNext(binding.searchviewQuery.getQuery().toString());
+
+                });
+
+        RxView.clicks(binding.buttonImage)
+                .subscribe(view -> {
+                    searchViewModel.selectedTabButton(ViewConstants.TAB.IMAGE);
+                    querySubject.onNext(binding.searchviewQuery.getQuery().toString());
+
+                });
+
+        querySubject.onNext(binding.searchviewQuery.getQuery().toString());
+
         // Init SearchView
         binding.searchviewQuery.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
 
-                query = query.trim();
-
-                if(query.isEmpty()) {
-                    return false;
-                }
-
-                binding.searchviewQuery.clearFocus();
-                searchViewModel.updatedQuery(query);
-
+                querySubject.onNext(query);
                 return false;
             }
 
@@ -73,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding.swipeRefreshLayout.setOnRefreshListener(() -> {
 
-            searchViewModel.invalidateQuery();
+            querySubject.onNext(binding.searchviewQuery.getQuery().toString());
             binding.swipeRefreshLayout.setRefreshing(false);
         });
 
@@ -91,50 +143,27 @@ public class MainActivity extends AppCompatActivity {
         tabGroup.setTintColor(Color.parseColor("#F06292"));
     }
 
+    private void initAdapter() {
+
+        switch(searchViewModel.getCurSelectedTab().getValue()) {
+            case WEB:
+                binding.buttonWeb.setChecked(true);
+                break;
+            case IMAGE:
+                binding.buttonImage.setChecked(true);
+        }
+
+        if(binding.buttonWeb.isChecked()) {
+            binding.recyclerviewQueryResponse.setAdapter(webResponsePagedListAdapter);
+            binding.recyclerviewQueryResponse.setLayoutManager(webResponseListLayoutManager);
+        }
+        else if(binding.buttonImage.isChecked()) {
+            binding.recyclerviewQueryResponse.setAdapter(imageResponsePagedListAdapter);
+            binding.recyclerviewQueryResponse.setLayoutManager(imageResponseListLayoutManager);
+        }
+    }
+
     private void observeLiveData() {
-
-        searchViewModel.getQuery().observe(this, query -> {
-
-            if((query == null) || query.isEmpty()) {
-
-                return;
-            }
-
-            switch( searchViewModel.getCurSelectedTab().getValue() ) {
-                case WEB:
-                    searchViewModel.queryWeb(query);
-                    break;
-                case IMAGE:
-                    searchViewModel.queryImage(query);
-                    break;
-            }
-        });
-
-        searchViewModel.getCurSelectedTab().observe(this, tab -> {
-
-            binding.searchviewQuery.clearFocus();
-            String query = binding.searchviewQuery.getQuery().toString();
-
-            switch (tab) {
-                case WEB:
-                    binding.recyclerviewQueryResponse.setAdapter(new WebResponsePagedListAdapter());
-                    binding.recyclerviewQueryResponse.setLayoutManager(new LinearLayoutManager(this));
-
-                    if((query != null) && (query.isEmpty() == false)) {
-                        searchViewModel.queryWeb(query);
-                    }
-                    break;
-                case IMAGE:
-                    ImageResponsePagedListAdapter adapter = new ImageResponsePagedListAdapter(getApplicationContext(), searchViewModel);
-                    binding.recyclerviewQueryResponse.setAdapter(adapter);
-                    binding.recyclerviewQueryResponse.setLayoutManager(new GridLayoutManager(this, ViewConstants.DEFAULT_GRID_SPAN_COUNT));
-
-                    if((query != null) && (query.isEmpty() == false)) {
-                        searchViewModel.queryImage(query);
-                    }
-                    break;
-            }
-        });
 
         searchViewModel.getNetworkState().observe(this, new Observer<NetworkState>() {
             @Override
@@ -147,21 +176,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
         searchViewModel.getWebInfoList().observe(this, pagedList -> {
-
-            if(searchViewModel.getCurSelectedTab().getValue() != ViewConstants.TAB.WEB) {
-                return;
-            }
-
-            ((WebResponsePagedListAdapter)(binding.recyclerviewQueryResponse.getAdapter())).submitList(pagedList);
+            webResponsePagedListAdapter.submitList(pagedList);
         });
 
         searchViewModel.getImageInfoList().observe(this, pagedList -> {
-
-            if(searchViewModel.getCurSelectedTab().getValue() != ViewConstants.TAB.IMAGE) {
-                return;
-            }
-
-            ((ImageResponsePagedListAdapter)(binding.recyclerviewQueryResponse.getAdapter())).submitList(pagedList);
+            imageResponsePagedListAdapter.submitList(pagedList);
         });
 
         searchViewModel.getSelectedDetailImagePosition().observe(this, new Observer<Integer>() {

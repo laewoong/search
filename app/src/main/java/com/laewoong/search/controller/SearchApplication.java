@@ -1,32 +1,38 @@
 package com.laewoong.search.controller;
 
+import android.app.Activity;
 import android.app.Application;
 
-import com.laewoong.search.model.NaverOpenAPIService;
-import com.laewoong.search.model.QueryHandler;
+import com.laewoong.search.di.DaggerApplicationComponent;
+
+import javax.inject.Inject;
+
+import dagger.android.AndroidInjector;
+import dagger.android.DispatchingAndroidInjector;
+import dagger.android.HasActivityInjector;
 
 /**
  * Created by laewoong on 2018. 4. 25..
  */
 
-public class SearchApplication extends Application {
+public class SearchApplication extends Application implements HasActivityInjector {
 
-    private QueryHandler mQueryHandler;
+    @Inject
+    DispatchingAndroidInjector<Activity> dispatchingActivityInjector;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        mQueryHandler = new QueryHandler();
+        DaggerApplicationComponent.builder()
+                .application(this)
+                .build()
+                .inject(this);
+
     }
 
     @Override
-    public void onTerminate() {
-        super.onTerminate();
-        mQueryHandler.release();
-    }
-
-    public QueryHandler getQueryHandler() {
-        return mQueryHandler;
+    public AndroidInjector<Activity> activityInjector() {
+        return dispatchingActivityInjector;
     }
 }

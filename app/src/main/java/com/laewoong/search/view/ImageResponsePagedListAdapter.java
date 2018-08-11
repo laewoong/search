@@ -11,21 +11,26 @@ import android.widget.TextView;
 import com.laewoong.search.R;
 import com.laewoong.search.model.response.ImageInfo;
 import com.laewoong.search.util.Util;
-import com.laewoong.search.viewmodel.SearchViewModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
+@Singleton
 public class ImageResponsePagedListAdapter extends PagedListAdapter<ImageInfo, ImageResponsePagedListAdapter.ViewHolder> {
 
     private Context mContext;
-    private SearchViewModel searchViewModel;
+    //private SearchViewModel searchViewModel;
 
-    public ImageResponsePagedListAdapter(Context context, SearchViewModel searchViewModel) {
+    @Inject
+    public ImageResponsePagedListAdapter(Context context) {
         super(ImageInfo.DIFF_CALLBACK);
         this.mContext = context;
-        this.searchViewModel = searchViewModel;
+        //this.searchViewModel = searchViewModel;
     }
 
     @Override
@@ -46,7 +51,7 @@ public class ImageResponsePagedListAdapter extends PagedListAdapter<ImageInfo, I
             @Override
             public void onClick(View view) {
 
-                searchViewModel.selectedDetailImagePosition(position);
+                //searchViewModel.selectedDetailImagePosition(position);
             }
         });
 

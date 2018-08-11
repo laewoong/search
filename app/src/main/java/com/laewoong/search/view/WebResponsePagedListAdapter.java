@@ -3,6 +3,7 @@ package com.laewoong.search.view;
 import android.arch.paging.PagedListAdapter;
 import android.support.v7.widget.RecyclerView;
 import android.text.util.Linkify;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +13,13 @@ import com.laewoong.search.R;
 import com.laewoong.search.model.response.WebInfo;
 import com.laewoong.search.util.Util;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class WebResponsePagedListAdapter extends PagedListAdapter<WebInfo, WebResponsePagedListAdapter.ViewHolder> {
 
+    @Inject
     public WebResponsePagedListAdapter() {
         super(WebInfo.DIFF_CALLBACK);
     }

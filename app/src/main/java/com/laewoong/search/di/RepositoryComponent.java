@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 import dagger.Component;
 import io.reactivex.disposables.CompositeDisposable;
 
-@Component(modules = { RepositoryModule.class })
+@Component(modules = { ContextModule.class, RepositoryModule.class })
 @Singleton
 public interface RepositoryComponent {
 
